@@ -27,3 +27,17 @@
 *.exe
 *.out
 *.app
+*.tsk
+
+# compiler generated file
+*.d
+*.dd
+
+# cmake files
+cpp/CMakeCache.txt
+cpp/cmake_install.cmake
+cpp/Makefile
+cpp/CMakeFiles
+
+# Nodejs Modules
+nodejs/node_modules
