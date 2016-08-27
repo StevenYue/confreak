@@ -9,8 +9,7 @@ var g_app = Express();
 
 //connect mongodb
 g_confreakdb.connect("localhost:10000/confreakdb");
-var g_tbUsers = g_confreakdb.model("users", {name: String, email: String, password: String});
-
+var UserModel = g_confreakdb.model("users", {name: String, email: String, password: String});
 
 //g_app set up
 g_app.set("view engine", "ejs");
@@ -36,35 +35,87 @@ g_app.get("/application.ejs", function(req, res){
 });
 
 g_app.post("/login", function(req, res){
-    console.log(req.body);
+    var user = createUser(req.body.email, '', '');
+    findUserModel(user, function(re){
 
-    res.render("application");
+        if ( re.errno )
+        {
+            console.log("login error");
+        }
+        else
+        {
+            if ( req.body.password === re.obj.password )
+            {
+                res.render("application", {user: re.obj});
+            }
+            else
+            {
+                res.render("index", {errno: -1});
+            }
+        }
+    });
+});
+
+g_app.post("/create", function(req, res){
+    var user = createUser(req.body.email, req.body.password, req.body.userName);
+    var re = findUserModel(user, returnCallBack);
+    if ( !re )
+    {
+        insertUserModel(user);
+        res.render("application", {user: user});
+    }
+    else
+    {
+       console.log("Creatation error"); 
+    }
+
 });
 
 //end of requests handlers
 
-//DB accessor
-g_tbUsers.findOne({name: "Steve"}, function(err, userObj)
-{
-    console.log("call back");
-    if ( err )
-    {
-        console.log(err);
-    }
-    else
-    {
-        console.log("obj: %j", userObj);
-        console.log(Util.inspect(userObj.name, false, null));
-    }
-});
 
-
-
-
-//End of DB accessor
 
 //subs
 
+function createUser(email, password, name)
+{
+    return {name: name, email: email, password: password};
+}
+
+function insertUserModel(user)
+{
+    var userModel = new UserModel(user);
+    userModel.save(function (err, userObj){
+        if (err)
+        {
+            console.log(err);
+        }
+        else
+        {
+            console.log('saved successfully: %j', userObj); 
+        }
+    });
+}
+
+function findUserModel(user, fn)
+{
+    UserModel.findOne({email: user.email}, function(err, userObj){
+        if ( err )
+        {
+            console.log(err);
+        }
+        else
+        {
+            console.log("User obj found: %j", userObj);
+        }
+        fn({errno: err, obj: userObj});
+    });
+}
+
+function returnCallBack(obj)
+{
+    return obj;
+}
 
 //end of subs
 

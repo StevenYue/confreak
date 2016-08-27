@@ -7,9 +7,26 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-<script src="register.js"></script>
 
 <style>
+
+	h1
+	{
+		text-align:center;
+		color: green;
+		font-family:fantasy;
+	}
+		
+	#formid
+	{
+		padding:10px;
+	}
+		
+	table
+	{
+		margin-left:auto;
+		margin-right:auto;
+	}
 
 </style>
 
@@ -22,7 +39,29 @@ $(document).ready(function(){
 </head>
 
 <body>
-<h1>Test, Deletion needed</h1>
+
+<div class="container">
+	<h1>&nbsp;</h1>
+	<h1>Register Confreak</h1>
+	<table>
+		<tr><td>
+			<div id="formid">
+				<form method="post" action="\create">
+				<input type="email" name="email" value=""  class="form-control"  placeholder="Email" required></p>
+				<input type="password" name="password" value="" class="form-control" placeholder="Password" required pattern=".{6,}" title="6 chars at least"></p>
+				<input type="text" name="userName" value="" class="form-control" placeholder="User Name" required></p>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<div class="text-center"> 
+				<input id="create" type="submit" name="commit" class="btn btn-success" value="Create">
+				</div>
+				</form>
+			</div>
+			</td>
+		</tr>
+    </table>
+    </div>
+
+
 </body>
 </html>
 <!-- Steeng create at: Fri Aug 19 18:29:49 EDT 2016 -->
