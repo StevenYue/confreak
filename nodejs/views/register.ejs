@@ -33,7 +33,37 @@
 <script type="text/javascript">
 $(document).ready(function(){
 
+
 });
+
+function checkAvailablity()
+{
+	var email = $("#id_email").val();
+	var args = {email: email};
+	$.ajax({
+		type: "post",
+		url: "/checkAvailablity",
+		data: args,
+		dataType : "json",
+		success : function(response, textStatus, jqXHR)
+		{
+			if (response.errno === 0)
+			{
+				$("#errorMSG").text("");
+			}
+			else
+			{
+				$("#errorMSG").text("Email has been used, please try another one");
+				$("#id_email").val("");
+			}
+		},
+		error: function(jqXHR, textStatus, errorThrown)
+		{
+			console.log("The following error occurred at checkAvailablity with args " + args + ": " + textStatus, errorThrown);
+		}
+	});
+}
+
 
 </script>
 </head>
@@ -47,9 +77,10 @@ $(document).ready(function(){
 		<tr><td>
 			<div id="formid">
 				<form method="post" action="\create">
-				<input type="email" name="email" value=""  class="form-control"  placeholder="Email" required></p>
+				<input id="id_email" type="email" name="email" value=""  class="form-control"  placeholder="Email" required onblur="checkAvailablity()"></p>
 				<input type="password" name="password" value="" class="form-control" placeholder="Password" required pattern=".{6,}" title="6 chars at least"></p>
-				<input type="text" name="userName" value="" class="form-control" placeholder="User Name" required></p>
+				<input type="text" name="userName" value="" class="form-control" placeholder="User Name" required>
+				<span id="errorMSG" style="color:red; font-size:75%"></span></p>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<div class="text-center"> 
 				<input id="create" type="submit" name="commit" class="btn btn-success" value="Create">

@@ -7,23 +7,54 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-<script src="application.js"></script>
-
 <style>
 
 </style>
 
 <script type="text/javascript">
 $(document).ready(function(){
+	var freakName = getUrlParameter("name");
+	console.log(freakName);
+	$("#id_test").text(freakName);
+
+	var args = {};
+	$.ajax({
+		type: "post",
+		url: "/dummy",
+		data: args,
+		dataType : "json",
+		success : function(response, textStatus, jqXHR)
+		{
+			console.log(response);
+		},
+		error: function(jqXHR, textStatus, errorThrown)
+		{
+			console.log("The following error occurred at dummy with args " + args + ": " + textStatus, errorThrown);
+		}
+	});
 
 });
+
+function getUrlParameter(sParam)
+{
+	var sPageURL = window.location.search.substring(1);
+	var sURLVariables = sPageURL.split('&');
+	for (var i = 0; i < sURLVariables.length; ++i) 
+	{
+		var sParameterName = sURLVariables[i].split('=');
+		if (sParameterName[0] == sParam) 
+		{
+			return sParameterName[1];
+		}
+	}
+}	
 
 </script>
 </head>
 
 <body>
 <h1>Application page  Test, Deletion needed</h1>
-<p>{{user}}</p>
+<p id="id_test"></p>
 </body>
 </html>
 <!-- Steeng create at: Fri Aug 19 18:33:33 EDT 2016 -->

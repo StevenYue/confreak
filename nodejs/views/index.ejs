@@ -30,9 +30,49 @@
 </style>
 
 <script type="text/javascript">
-$(document).ready(function(){
+const LOGIN_ERROR_EMAIL_NOT_FOUND = "-1";
+const LOGIN_ERROR_WRONG_PASSWORD = "-2";
 
+$(document).ready(function(){
+	var errno = getUrlParameter("errno");
+  	console.log(errno);
+  	if ( errno )
+  	{
+  		if ( errno === LOGIN_ERROR_EMAIL_NOT_FOUND )
+  		{
+  			$("#id_email").val("");
+  			$("#id_password").val("");
+  			$("#errorMSG").text("Email address not found.");
+  		}
+  		else if ( errno === LOGIN_ERROR_WRONG_PASSWORD )
+  		{
+  			$("#id_password").val("");
+  			$("#errorMSG").text("Password is wrong.");
+  		}
+  		else
+  		{
+  			$("#errorMSG").text(" ");
+  		}
+  	}
+  	else
+  	{
+  		$("#errorMSG").text(" ");
+  	}
 });
+
+function getUrlParameter(sParam)
+{
+	var sPageURL = window.location.search.substring(1);
+	var sURLVariables = sPageURL.split('&');
+	for (var i = 0; i < sURLVariables.length; i++) 
+	{
+		var sParameterName = sURLVariables[i].split('=');
+		if (sParameterName[0] == sParam) 
+		{
+			return sParameterName[1];
+		}
+	}
+}	
 
 </script>
 </head>
@@ -46,8 +86,9 @@ $(document).ready(function(){
 		<tr><td>
 			<div id="formid">
 				<form method="post" action="\login">
-				<input type="email" name="email" value=""  class="form-control"  placeholder="Email" required></p>
-				<input type="password" name="password" value="" class="form-control" placeholder="Password" required pattern=".{6,}"></p>
+				<input id="id_email" type="email" name="email" value=""  class="form-control"  placeholder="Email" required></p>
+				<input id="id_password" type="password" name="password" value="" class="form-control" placeholder="Password" required pattern=".{6,}">
+				<span id="errorMSG" style="color:red; font-size:75%">&nbsp;</span></p>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<div class="text-center"> 
 				<input id="login" type="submit" name="commit" class="btn btn-success" value="Login">
@@ -58,7 +99,7 @@ $(document).ready(function(){
 		</tr>
 		<tr>
 			<td>
-				<span><a href="register" style="font-size:75%;">New user, click here</a></span>
+				<span><a href="register.ejs" style="font-size:75%;">New user, click here</a></span>
 			</td>
 		</tr>
     </table>
