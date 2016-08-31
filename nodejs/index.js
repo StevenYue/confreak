@@ -32,8 +32,11 @@ g_app.listen(8000, function (){
 const LOGIN_ERROR_EMAIL_NOT_FOUND = -1;
 const LOGIN_ERROR_WRONG_PASSWORD = -2;
 
-const CHECK_AVAILABILITY_OK = 0;
+const CHECK_AVAILABILITY_GOOD = 0;
 const CHECK_AVAILABILITY_BAD = -1;
+
+const SESSION_VERIFY_GOOD = 0;
+const SESSION_VERIFY_BAD  = -1;
 
 //end of Constants
 
@@ -117,7 +120,7 @@ g_app.post("/checkAvailablity", function(req, res){
         }
         else
         {
-            var checkResult = {errno: CHECK_AVAILABILITY_OK};
+            var checkResult = {errno: CHECK_AVAILABILITY_GOOD};
             if ( re.obj )
             {
                 checkResult.errno = CHECK_AVAILABILITY_BAD;   
@@ -129,35 +132,8 @@ g_app.post("/checkAvailablity", function(req, res){
 
 g_app.post("/dummy", function(req, res){
     console.log("dummy Request:", req.body)
-    var user = createUser(req.session.email, '', '');
-    findUserModel(user, function(re){
-        if ( re.errno )
-        {
-            console.log("sessionVerify error");
-        }
-        else
-        {
-            if ( re.obj )
-            {
-                if ( re.obj.password === req.session.password )
-                {
-                    console.log("sessionVerify passed");
-                }
-                else
-                {
-                    console.log("sessionVerify failed, wrong password");
-                    res.redirect("/index");
-                }   
-            }
-            else
-            {
-                console.log("sessionVerify failed, not a valid user");
-                res.send({a:1});
-                console.log("fuck");
-            }
-            
-        }
-    });   
+    if ( !sessionVerify(req, res) )
+
 
 });
 
@@ -200,6 +176,20 @@ function findUserModel(user, fn)
         }
         fn({errno: err, obj: userObj});
     });
+}
+
+function sessionVerify(req, res)
+{
+    if ( req.session.email && req.session.password )
+    {
+        console.log("sessionVerify passed");
+        return SESSION_VERIFY_GOOD;
+    } 
+    else
+    {
+        console.log("Invalid session obj");
+        return SESSION_VERIFY_BAD;
+    }
 }
 
 //end of subs
