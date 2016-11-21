@@ -2,15 +2,48 @@ var Express = require("express");
 var Util = require("util");
 var BodyParser = require("body-parser");
 var Session = require("client-sessions");
+var WebSocketServer = require('websocket').server;
+var Http = require('http');
+var server = http.createServer(function(request, response){}).listen(1337, function() {});
 
 
 var g_confreakdb = require("mongoose");
 var g_app = Express();
 
+// create the server
+g_wsServer = new WebSocketServer({
+    httpServer: server
+});
+
+// WebSocket server
+g_wsServer.on('request', function(request) {
+    var connection = request.accept(null, request.origin);
+
+    setInterval(function(){
+        console.log('test');
+    }, 2 * 1000); //2 sec
+
+    // This is the most important callback for us, we'll handle
+    // all messages from users here.
+    connection.on('message', function(message) {
+        console.log("Oh yes: " + message);
+        if (message.type === 'utf8') {
+            // process WebSocket message
+        }
+    });
+
+    connection.on('close', function(connection) {
+        // close user connection
+    });
+});
+
+
 
 //connect mongodb
 g_confreakdb.connect("localhost:10000/confreakdb");
-var UserModel = g_confreakdb.model("freak", {name: String, email: String, password: String});
+var UserModel           = g_confreakdb.model("Freak", {name: String, email: String, password: String});
+var ApplicationModel    = g_confreakdb.model("ApplicationModel", {AppName: String, AppDesc: String, 
+    AppType: Number, BoolData: Boolean, NumericData: Number, Email: String  });
 
 //g_app set up
 g_app.set("view engine", "ejs");
@@ -38,6 +71,13 @@ const CHECK_AVAILABILITY_BAD = -1;
 const SESSION_VERIFY_GOOD = 0;
 const SESSION_VERIFY_BAD  = -1;
 
+const APP_TYPE_MAP = {
+    "Control Application" : 0,
+    "Monitor Application" : 1,
+    0 : "Control Application",
+    1 : "Monitor Application"
+};
+
 //end of Constants
 
 
@@ -51,7 +91,14 @@ g_app.get("/register.ejs", function(req, res){
 });
 
 g_app.get("/application.ejs", function(req, res){
-    res.render("application.ejs");
+    if ( sessionVerify(req, res) === SESSION_VERIFY_GOOD )
+    {
+        res.render("application.ejs");
+    }
+    else
+    {
+        res.render("index.ejs");
+    }
 });
 
 g_app.post("/login", function(req, res){
@@ -130,11 +177,69 @@ g_app.post("/checkAvailablity", function(req, res){
     });   
 });
 
+g_app.post("/createApp", function(req, res){
+    console.log("createApp Request: ", req.body);
+    if ( sessionVerify(req, res) === SESSION_VERIFY_GOOD )
+    {
+        var email = req.session.email;
+        var args = {
+            Email : email,
+            AppName : req.body.AppName,
+            AppType : req.body.AppType
+        };
+        findAppModel(args, function(resApp){
+            if ( resApp.obj && resApp.obj.length > 0 )
+            {
+                var checkResult = {errno: CHECK_AVAILABILITY_BAD};
+                res.send(checkResult);
+            }
+            else
+            {
+                var app = createApp(req.body.AppName, req.body.AppDesc, req.body.AppType, false, 0, email);
+                insertAppModel(app);
+                var checkResult = {errno: CHECK_AVAILABILITY_GOOD};
+                res.send(checkResult);
+            }
+        });
+    }
+});
+
+g_app.post("/loadAllApplications", function(req, res){
+    console.log("loadAllApplications Request: ", req.body);
+    if ( sessionVerify(req, res) === SESSION_VERIFY_GOOD )
+    {
+        var args = {
+            Email : req.session.email
+        };
+        findAppModel(args, function(resApp){
+            res.send(resApp.obj);
+        });
+    }
+});
+
+g_app.post("/deleteApp", function(req, res){
+    console.log("deleteApp Request: ", req.body);
+    if ( sessionVerify(req, res) === SESSION_VERIFY_GOOD )
+    {
+        var args = {AppName : req.body.AppName, AppType : req.body.AppType};
+        removeAppModel(args, function(resApp){
+            res.send(resApp);
+        });
+    }
+});
+
+g_app.post("/off", function(req, res){
+    req.session.destroy(function(err){
+        console.log("Session destroy error");
+    });
+});
+
 g_app.post("/dummy", function(req, res){
     console.log("dummy Request:", req.body)
     if ( !sessionVerify(req, res) )
+    {
 
-
+    }
 });
 
 //end of requests handlers
@@ -148,10 +253,30 @@ function createUser(email, password, name)
     return {name: name, email: email, password: password};
 }
 
+function createApp(appName, appDesc, appType, boolData, numericData, email)
+{
+    return {AppName: appName, AppDesc: appDesc, AppType: appType, BoolData: boolData, NumericData: numericData, Email: email};
+}
+
 function insertUserModel(user)
 {
     var userModel = new UserModel(user);
     userModel.save(function (err, userObj){
+        if (err)
+        {
+            console.log(err);
+        }
+        else
+        {
+            console.log('saved successfully: %j', userObj); 
+        }
+    });
+}
+
+function insertAppModel(app)
+{
+    var appModel = new ApplicationModel(app);
+    appModel.save(function (err, userObj){
         if (err)
         {
             console.log(err);
@@ -178,7 +303,37 @@ function findUserModel(user, fn)
     });
 }
 
-function sessionVerify(req, res)
+function findAppModel(args, func)
+{
+    ApplicationModel.find(args, function(err, obj){
+        if ( err )
+        {
+            console.log(err);
+        }
+        else
+        {
+            console.log("App Obj found: %j", obj);
+        }
+        func({errno: err, obj: obj});
+    });
+}
+
+function removeAppModel(args, func)
+{
+    ApplicationModel.remove(args, function(err, obj){
+        if ( err )
+        {
+            console.log(err);
+        }
+        else
+        {
+            console.log(args + " removed successfully");
+        }
+        func({errno: err});
+    });
+}
+
+function sessionVerify(req, res) 
 {
     if ( req.session.email && req.session.password )
     {

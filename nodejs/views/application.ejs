@@ -9,32 +9,140 @@
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 <style>
+div.pull-right:hover 
+{
+	color: red;
+	cursor:pointer;
+}
+
 
 </style>
 
 <script type="text/javascript">
+
+const APP_TYPE_MAP = {
+    "Control Application" : 0,
+    "Monitor Application" : 1,
+    0 : "Control Application",
+    1 : "Monitor Application"
+};
+const CHECK_AVAILABILITY_GOOD = 0;
+const CHECK_AVAILABILITY_BAD = -1;
+
 $(document).ready(function(){
 	var freakName = getUrlParameter("name");
-	console.log(freakName);
-	$("#id_test").text(freakName);
+	$("#id_test").text("Hihao " + freakName);
 
-	var args = {};
-	$.ajax({
-		type: "post",
-		url: "/dummy",
-		data: args,
-		dataType : "json",
-		success : function(response, textStatus, jqXHR)
-		{
-			console.log(response);
-		},
-		error: function(jqXHR, textStatus, errorThrown)
-		{
-			console.log("The following error occurred at dummy with args " + args + ": " + textStatus, errorThrown);
-		}
-	});
-
+	$("#id_createApp").bind("click", createAppClickedHandler);
+	$("#id_off").bind("click", logoffClickedHandler);
+	loadAllApplications();
 });
+
+
+
+
+
+
+function delAPPClickedHanlder()
+{
+	let appName = $(this).data("AppName");
+	let appType = $(this).data("AppType");
+	let args = { AppName : appName, AppType : appType };
+	let url = "/deleteApp";
+	function successFunc(res)
+	{
+		console.log("Delete App Success: " + res);
+		if ( !res.errno )
+		{
+			loadAllApplications();
+		}
+	}
+	ajexCall(args, url, successFunc);
+}
+
+function loadAllApplications()
+{
+	let args = {};
+	let url = "/loadAllApplications";
+	function successFunc(res)
+	{
+		console.log(res);
+		$("#id_appDashBoard").empty();
+		for ( let i in res )
+		{
+			let appInfo = res[i];
+			let rc = createAppHtmlDiv(appInfo);
+			$("#id_appDashBoard").append(rc.HtmlStr);
+			$("#" + rc.DelDivId).data("AppName", appInfo.AppName);
+			$("#" + rc.DelDivId).data("AppType", appInfo.AppType);
+		}
+		$(".pull-right").bind("click", delAPPClickedHanlder);
+	}
+	ajexCall(args, url, successFunc);
+}
+
+function createAppClickedHandler()
+{
+	let appName = $("#id_appName").val();
+	let appDesc = $("#id_appDesc").val();
+	let appType = $("#id_appType option:selected").text();
+
+	if ( appName === "" || appType === "" || appDesc === "" )
+	{
+	//only two fields here, both have to be present
+		$("#id_errorMSG").text("Your Application needs a name and a more descriptive description!!!");
+		return;
+	}
+	
+	let args = {
+		AppName : appName,
+		AppDesc : appDesc,
+		AppType : APP_TYPE_MAP[appType]
+	};
+	function successFunc(args)
+	{
+		if ( args.errno === CHECK_AVAILABILITY_GOOD )
+		{
+			$("#id_errorMSG").text("Application created successfully.");
+			loadAllApplications();
+		}
+		else
+		{
+			$("#id_errorMSG").text("Application created failed, an application with the same info may have existed.");
+		}
+	};
+	ajexCall(args, "/createApp", successFunc, errorFuncDefault);
+}
+
+function logoffClickedHandler()
+{
+	let args = {};
+	let url = "\off";
+	ajexCall(args, url);
+}
+
+function ajexCall(args, url, successFunc = successFuncDefault, errorFunc = errorFuncDefault)
+{
+    $.ajax(
+    {
+        type : 'POST',
+        url : url,
+        datatype: 'json',
+        data : args,
+        success : successFunc,
+        error : errorFunc
+    });
+}
+
+function errorFuncDefault(jqXHR, textStatus, errorThrown)
+{
+	console.log("Ajex Call Error:" + textStatus, errorThrown);
+}
+
+function successFuncDefault(response, textStatus, jqXHR)
+{
+	console.log("Ajex Call success:" + response);
+}
 
 function getUrlParameter(sParam)
 {
@@ -50,12 +158,117 @@ function getUrlParameter(sParam)
 	}
 }	
 
+function createAppHtmlDiv(appInfo)
+{
+	let appName = appInfo.AppName;
+	let appDesc = appInfo.AppDesc;
+	let appType = appInfo.AppType;
+	let appDetailHtml = "";
+	let htmlTagID = "id_" + appName + "_" + appType;
+	let collapseDivID = htmlTagID + "_Col";
+	if ( appType === APP_TYPE_MAP["Control Application"] )
+	{
+		appDetailHtml = "<span>Switch: <input type='checkbox'  data-toggle='toggle' id='" + htmlTagID+ "'></span>";
+	}
+	else
+	{
+		appDetailHtml = "<span id='" + htmlTagID + "'>App Data: </span>"
+	}
+	let delButtonID = htmlTagID + "_del";
+	let delAppButton = "<div class='pull-right' id='" + delButtonID + "'><span class='glyphicon glyphicon-remove'></span></div>";
+	let appHtml = "<div class='panel panel-default'> 																	\
+      <div class='panel-heading'>																						\
+        <h4 class='panel-title'>																						\
+          <a data-toggle='collapse' data-parent='#id_appDashBoard' href='#" + collapseDivID + "'>						\
+          " + appName + ": " + appDesc + "</a> " + delAppButton + "													\
+        </h4>																											\
+      </div>																											\
+      <div id='" + collapseDivID + "' class='panel-collapse collapse'>													\
+        <div class='panel-body'>																						\
+       		" + appDetailHtml + "																						\
+        </div>																											\
+      </div>																											\
+    </div>";
+    return {HtmlStr: appHtml, DelDivId : delButtonID};
+}
+
+function debug(text)
+{
+	let oldText = $("#id_test").text();
+	let debugText = oldText + "\n" + text;
+	$("#id_test").text(debugText);
+}
+
 </script>
 </head>
 
 <body>
-<h1>Application page  Test, Deletion needed</h1>
-<p id="id_test"></p>
+
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">Confreak</a>
+    </div>
+
+<!--  Menu with Drop down, leave this here in case furture usage.
+    <ul class="nav navbar-nav">
+      <li class="active"><a href="#">Home</a></li>
+      <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Page 1 <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          <li><a href="#">Page 1-1</a></li>
+          <li><a href="#">Page 1-2</a></li>
+          <li><a href="#">Page 1-3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Page 2</a></li>
+    </ul>
+-->
+
+    <ul class="nav navbar-nav navbar-right">
+      <li data-toggle="modal" data-target="#myModal"><a href="#"><span class="glyphicon glyphicon-plus"></span> Create Application</a></li>
+      <li><a id="id_off" href="http://localhost:8000/" ><span class="glyphicon glyphicon-log-in"></span> Log Off</a></li>
+    </ul>
+  </div>
+</nav>
+  <!-- Application Creation popup -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Create Your Application</h4>
+        </div>
+        <div class="modal-body">
+          
+          	
+          		<label>App Name: </label>
+				<input id="id_appName" type="text" name="appName" value=""  class="form-control" maxlength="16" placeholder="Application Name" >
+				<label>App Description: </label>
+				<input id="id_appDesc" type="text" name="appName" value=""  class="form-control"  placeholder="Application Description">
+				<label>App Type: </label>
+				<select class="form-control" id="id_appType" >
+		        	<option>Control Application</option>
+		        	<option>Monitor Application</option>
+		      	</select>
+
+		      	<span id="id_errorMSG" style="color:red; font-size:75%">&nbsp;</span></p>
+        </div>
+        <div class="modal-footer">
+        	<button type="button" class="btn btn-default" id="id_createApp">Create</button>
+          	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<p id="id_test"> welcome to confreak</p>
+
+<div class="panel-group" id="id_appDashBoard">
+    
+</div>
+
+
 </body>
 </html>
 <!-- Steeng create at: Fri Aug 19 18:33:33 EDT 2016 -->
