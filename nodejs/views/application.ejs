@@ -30,18 +30,14 @@ const CHECK_AVAILABILITY_GOOD = 0;
 const CHECK_AVAILABILITY_BAD = -1;
 
 $(document).ready(function(){
-	var freakName = getUrlParameter("name");
-	$("#id_test").text("Hihao " + freakName);
+	var urlArgs = getUrlParameter();
+	$("#id_test").text("Hihao " + urlArgs["name"]);
 
 	$("#id_createApp").bind("click", createAppClickedHandler);
 	$("#id_off").bind("click", logoffClickedHandler);
 	loadAllApplications();
+	setupWebsocket(urlArgs["email"]);
 });
-
-
-
-
-
 
 function delAPPClickedHanlder()
 {
@@ -117,7 +113,9 @@ function createAppClickedHandler()
 function logoffClickedHandler()
 {
 	let args = {};
-	let url = "\off";
+	let url = "/off";
+	console.log(args);
+	console.log(url);
 	ajexCall(args, url);
 }
 
@@ -146,16 +144,19 @@ function successFuncDefault(response, textStatus, jqXHR)
 
 function getUrlParameter(sParam)
 {
+	let re = {};
 	var sPageURL = window.location.search.substring(1);
 	var sURLVariables = sPageURL.split('&');
 	for (var i = 0; i < sURLVariables.length; ++i) 
 	{
 		var sParameterName = sURLVariables[i].split('=');
+		re[sParameterName[0]] = sParameterName[1];
 		if (sParameterName[0] == sParam) 
 		{
 			return sParameterName[1];
 		}
 	}
+	return re;
 }	
 
 function createAppHtmlDiv(appInfo)
@@ -179,7 +180,7 @@ function createAppHtmlDiv(appInfo)
 	let appHtml = "<div class='panel panel-default'> 																	\
       <div class='panel-heading'>																						\
         <h4 class='panel-title'>																						\
-          <a data-toggle='collapse' data-parent='#id_appDashBoard' href='#" + collapseDivID + "'>						\
+          <a data-toggle='collapse' href='#" + collapseDivID + "'>						\
           " + appName + ": " + appDesc + "</a> " + delAppButton + "													\
         </h4>																											\
       </div>																											\
@@ -190,6 +191,44 @@ function createAppHtmlDiv(appInfo)
       </div>																											\
     </div>";
     return {HtmlStr: appHtml, DelDivId : delButtonID};
+}
+
+
+function setupWebsocket(email) {
+    // if user is running mozilla then use it's built-in WebSocket
+    window.WebSocket = window.WebSocket || window.MozWebSocket;
+
+    let connection = new WebSocket('ws://127.0.0.1:1337?email=' + email);
+
+    connection.onopen = function () {
+        // connection is opened and ready to use
+    };
+
+    connection.onerror = function (error) {
+        // an error occurred when sending/receiving data
+    };
+
+    connection.onmessage = function (message) {
+        // try to decode json (I assume that each message from server is json)
+        try {
+            let appData = JSON.parse(message.data);
+            console.log(appData);
+            for ( let i in appData )
+            {
+            	let app = appData[i];
+            	if ( app.AppType === APP_TYPE_MAP["Monitor Application"] )
+            	{
+            		let htmlTagID = "id_" + app.AppName + "_" + app.AppType;
+            		$("#"+htmlTagID).text("App Data: " + app.NumericData);
+            	}
+            }
+
+        } catch (e) {
+            console.log("This doesn't look like a valid JSON: ", message.data);
+            return;
+        }
+        // handle incoming message
+    };
 }
 
 function debug(text)
@@ -226,7 +265,7 @@ function debug(text)
 
     <ul class="nav navbar-nav navbar-right">
       <li data-toggle="modal" data-target="#myModal"><a href="#"><span class="glyphicon glyphicon-plus"></span> Create Application</a></li>
-      <li><a id="id_off" href="http://localhost:8000/" ><span class="glyphicon glyphicon-log-in"></span> Log Off</a></li>
+      <li><a id="id_off" href="off"><span class="glyphicon glyphicon-log-in"></span> Log Off</a></li>
     </ul>
   </div>
 </nav>

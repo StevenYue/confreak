@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "Try starting Mongodb ......."
+isMongoRunning=$(ps -all | grep mongod)
+
+
+if [[ $isMongoRunning == "" ]]
+then
+    mongod --port 10000 --dbpath /var/lib/mongodb --journal #bring up mongo server
+fi

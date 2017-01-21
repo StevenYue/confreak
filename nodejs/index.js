@@ -4,11 +4,12 @@ var BodyParser = require("body-parser");
 var Session = require("client-sessions");
 var WebSocketServer = require('websocket').server;
 var Http = require('http');
-var server = http.createServer(function(request, response){}).listen(1337, function() {});
-
+var server = Http.createServer(function(request, response){}).listen(1337, function() {});
+var g_store = require("memory-store");
 
 var g_confreakdb = require("mongoose");
 var g_app = Express();
+var g_login = {};
 
 // create the server
 g_wsServer = new WebSocketServer({
@@ -16,13 +17,30 @@ g_wsServer = new WebSocketServer({
 });
 
 // WebSocket server
-g_wsServer.on('request', function(request) {
-    var connection = request.accept(null, request.origin);
+g_wsServer.on('request', function(req) {
+    var email = req.resourceURL.query.email;
+    console.log(email);
+    var connection = req.accept(null, req.origin);
 
-    setInterval(function(){
-        console.log('test');
-    }, 2 * 1000); //2 sec
-
+    var interval = setInterval(function(){
+        var args = {
+            Email : email
+        };
+        findAppModel(args, function(resApp){
+            /*
+            for ( var i in resApp.obj )
+            {
+                var app = resApp.obj[i];
+                if ( app.AppType === APP_TYPE_MAP["Monitor Application"] )
+                {
+                    app.NumericData = Math.random();
+                }
+            }
+            */
+            connection.sendUTF(JSON.stringify(resApp.obj));
+        });
+    }, 2000); //2 sec
+    connection.interval = interval;
     // This is the most important callback for us, we'll handle
     // all messages from users here.
     connection.on('message', function(message) {
@@ -32,11 +50,12 @@ g_wsServer.on('request', function(request) {
         }
     });
 
-    connection.on('close', function(connection) {
+    connection.on('close', function(conn) {
         // close user connection
+        console.log("WebSocket closed", conn);
+        clearInterval(this.interval);
     });
 });
-
 
 
 //connect mongodb
@@ -54,6 +73,7 @@ g_app.use(Session({
   secret: 'dhgaugahnguroqarnaf',
   duration: 30 * 60 * 1000,
   activeDuration: 5 * 60 * 1000,
+  key : "sid"
 }));
 g_app.listen(8000, function (){
     console.log("confreak start listening port 8000");        
@@ -117,7 +137,8 @@ g_app.post("/login", function(req, res){
                 {
                     req.session.email = req.body.email;
                     req.session.password = req.body.password;
-                    res.redirect("/application.ejs?name=" + re.obj.name);
+                    g_login[req.body.email] = req.body.password; 
+                    res.redirect("/application.ejs?name=" + re.obj.name + "&email=" + req.body.email);
                 }
                 else
                 {
@@ -147,6 +168,7 @@ g_app.post("/create", function(req, res){
                 insertUserModel(user);
                 req.session.email = req.body.email;
                 req.session.password = req.body.password;
+                g_login[req.body.email] = req.body.password; 
                 res.redirect("/application.ejs?name=" + req.body.userName);
             }
             else
@@ -228,10 +250,32 @@ g_app.post("/deleteApp", function(req, res){
     }
 });
 
-g_app.post("/off", function(req, res){
+g_app.get("/updateAppData", function(req, res){
+    console.log("updateAppData request: ", req.query);
+    var inf = req.query;
+    var data = Number(inf.data);
+    var appType = Number(inf.apptype);
+    if ( inf.appname && appType === APP_TYPE_MAP["Monitor Application"] && inf.email && inf.password && inf.data )
+    {
+        var user = {email : inf.email };
+        findUserModel(user, function(res){
+            if ( res.obj.password === inf.password )
+            {
+                var appRef = {AppName : inf.appname, AppType : appType, Email : inf.email};
+                //var update = {AppName : inf.appname, AppType : appType, Email : inf.email, NumericData : data};
+                var update = {$set: {NumericData: data}};
+                updateAppModel(appRef, update);
+            }
+        });
+    }
+});
+
+g_app.get("/off", function(req, res){
     req.session.destroy(function(err){
         console.log("Session destroy error");
     });
+    console.log("log off finished");
+    res.render("index.ejs");
 });
 
 g_app.post("/dummy", function(req, res){
@@ -318,6 +362,16 @@ function findAppModel(args, func)
     });
 }
 
+function updateAppModel(ref, update)
+{
+    console.log("Ref: %j", ref);
+    console.log("New: %j", update);
+    ApplicationModel.update(ref, update, function(err, item){
+        console.log(err);
+        console.log("%j", item);
+    });
+}
+
 function removeAppModel(args, func)
 {
     ApplicationModel.remove(args, function(err, obj){
@@ -335,8 +389,9 @@ function removeAppModel(args, func)
 
 function sessionVerify(req, res) 
 {
-    if ( req.session.email && req.session.password )
+    if ( req.session.email && req.session.password && g_login[req.session.email] === req.session.password )
     {
+
         console.log("sessionVerify passed");
         return SESSION_VERIFY_GOOD;
     } 
