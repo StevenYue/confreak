@@ -258,15 +258,20 @@ g_app.get("/updateAppData", function(req, res){
     if ( inf.appname && appType === APP_TYPE_MAP["Monitor Application"] && inf.email && inf.password && inf.data )
     {
         var user = {email : inf.email };
-        findUserModel(user, function(res){
-            if ( res.obj.password === inf.password )
+        findUserModel(user, function(userModel){
+            if ( userModel.obj.password === inf.password )
             {
                 var appRef = {AppName : inf.appname, AppType : appType, Email : inf.email};
                 //var update = {AppName : inf.appname, AppType : appType, Email : inf.email, NumericData : data};
                 var update = {$set: {NumericData: data}};
                 updateAppModel(appRef, update);
+                res.send({errno: 0});
             }
         });
+    }
+    else
+    {
+        res.send({errno: 7});
     }
 });
 

@@ -7,14 +7,13 @@
 
 using namespace std;
 
-
 class Value {
 private:
     string d_val;
 public:
     Value():d_val(""){}
     Value(const string& val):d_val(val){}
-    int asInt() {std::stoi(d_val);} //stoi CAN THROW!!!
+    int asInt() {std::stoi(d_val);} //stoi() CAN THROW Bomb!!!
     const string& asString()   {return d_val;}
 };
 
