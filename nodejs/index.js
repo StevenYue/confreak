@@ -91,6 +91,9 @@ const CHECK_AVAILABILITY_BAD = -1;
 const SESSION_VERIFY_GOOD = 0;
 const SESSION_VERIFY_BAD  = -1;
 
+const HTTP_GET_INVALID_ARGS = -3;
+const HTTP_GET_WRONG_PASSWORD = -4;
+
 const APP_TYPE_MAP = {
     "Control Application" : 0,
     "Monitor Application" : 1,
@@ -267,13 +270,50 @@ g_app.get("/updateAppData", function(req, res){
                 updateAppModel(appRef, update);
                 res.send({errno: 0});
             }
+            else
+            {
+                res.send({errno: HTTP_GET_WRONG_PASSWORD});
+            }
         });
     }
     else
     {
-        res.send({errno: 7});
+        res.send({errno: HTTP_GET_INVALID_ARGS});
     }
 });
+
+g_app.get("/loadAllApplications", function(req, res){
+    console.log("loadAllApplications get Request: ", req.query);
+    var inf = req.query;
+    if ( inf.email && inf.password )
+    {
+        var user = { email : inf.email};
+        findUserModel(user, function(userModel){
+            if ( userModel.obj.password === inf.password )
+            {
+                var args = { Email : inf.email };
+                findAppModel(args, function(resApp){
+                    var allApps = {}; 
+                    for ( var i in resApp.obj )
+                    {
+                        var row = resApp.obj[i];
+                        allApps[row.AppName + "-" + row.AppType] = row;
+                    }
+                    res.send(allApps);
+                });
+            }
+            else
+            {
+                res.send({errno: HTTP_GET_WRONG_PASSWORD});
+            }
+        })
+    }
+    else
+    {
+        res.send({errno : HTTP_GET_INVALID_ARGS});
+    }
+});
+
 
 g_app.get("/off", function(req, res){
     req.session.destroy(function(err){

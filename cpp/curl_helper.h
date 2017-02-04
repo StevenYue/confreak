@@ -2,6 +2,8 @@
 #define INCLUDED_CURL_HELPER
 #include <curl/curl.h>
 #include <iostream>
+#include <string>
+#include <stdexcept>
 
 class EasyCurl{
 private:
@@ -28,7 +30,7 @@ public:
         return size * nmemb;
     }
 
-    std::string httpGet(const string& url)
+    std::string httpGet(const std::string& url)
     {
         CURLcode res;
         std::string s;
