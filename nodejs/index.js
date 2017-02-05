@@ -5,7 +5,6 @@ var Session = require("client-sessions");
 var WebSocketServer = require('websocket').server;
 var Http = require('http');
 var server = Http.createServer(function(request, response){}).listen(1337, function() {});
-var g_store = require("memory-store");
 
 var g_confreakdb = require("mongoose");
 var g_app = Express();
@@ -27,16 +26,6 @@ g_wsServer.on('request', function(req) {
             Email : email
         };
         findAppModel(args, function(resApp){
-            /*
-            for ( var i in resApp.obj )
-            {
-                var app = resApp.obj[i];
-                if ( app.AppType === APP_TYPE_MAP["Monitor Application"] )
-                {
-                    app.NumericData = Math.random();
-                }
-            }
-            */
             connection.sendUTF(JSON.stringify(resApp.obj));
         });
     }, 2000); //2 sec
@@ -209,8 +198,7 @@ g_app.post("/createApp", function(req, res){
         var email = req.session.email;
         var args = {
             Email : email,
-            AppName : req.body.AppName,
-            AppType : req.body.AppType
+            AppName : req.body.AppName
         };
         findAppModel(args, function(resApp){
             if ( resApp.obj && resApp.obj.length > 0 )
@@ -297,7 +285,7 @@ g_app.get("/loadAllApplications", function(req, res){
                     for ( var i in resApp.obj )
                     {
                         var row = resApp.obj[i];
-                        allApps[row.AppName + "-" + row.AppType] = row;
+                        allApps[row.AppName] = row;
                     }
                     res.send(allApps);
                 });

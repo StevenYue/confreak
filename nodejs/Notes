@@ -10,3 +10,6 @@
     7) db.<collection name>.update({criteria JSON format}, {new JSON object})
     8) db.<collection name>.remove({criteria JSON format})
     9) db.<collection name>.drop()
+
+3. How to install mongodb on ubuntu:
+https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/

@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
         std::cout << json << std::endl;
 
         confreak::ConfreakApps test(json);
-
+        std::cout << test << std::endl;
     }
     catch(const std::exception& e)
     {
