@@ -8,6 +8,12 @@
 
 namespace confreak {
 
+struct ConfreakRt
+{
+    int             rc; //return code
+    std::string     rs; //return string
+};
+
 class Application {
 public:
     enum AppType  {CONTROL_APP, MONITOR_APP};

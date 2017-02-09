@@ -7,7 +7,7 @@
 #include <errno.h>  /* ERROR Number Definitions          */
 
 //given serial port name and mode, return a file descriptor
-int openSerial(char* portName, int mode);
+int openSerial(const char* portName, int mode);
 
 //close the serial port fd
 void closeSerial(int fd);
@@ -17,7 +17,7 @@ void closeSerial(int fd);
 int configSerial(int fd);
 
 //write to serial port, return number of bytes written
-int writeSerial(int fd, char* buf);
+int writeSerial(int fd, const char* buf);
 
 //read from serial port, return number of bytes read
 int readSerial(int fd, char* buf, int bufSize);

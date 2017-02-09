@@ -3,6 +3,7 @@
 #include <curl/curl.h>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <stdexcept>
 
 class EasyCurl{
@@ -30,7 +31,8 @@ public:
         return size * nmemb;
     }
 
-    std::string httpGet(const std::string& url)
+    //return 0 on success, -1 on failure
+    int httpGet(const std::string& url, std::string& rstr)
     {
         CURLcode res;
         std::string s;
@@ -41,9 +43,16 @@ public:
         res = curl_easy_perform(d_curl);
         if ( res != CURLE_OK )
         {
-            std::cerr << "Error Curl: " << curl_easy_strerror(res) << std::endl;
+            std::ostringstream os;
+            os << "Error Curl: " << curl_easy_strerror(res);
+            rstr = os.str();
+            return -1;
         }
-        return s;
+        else
+        {
+            rstr = s;
+            return 0;
+        }
     }
 };
 

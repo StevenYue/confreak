@@ -19,15 +19,25 @@ int main(int argc, char* argv[])
         std::cout << "password: " << (*config)["LOGIN"]["password"].asString() << std::endl;
         std::cout << "password: " << (*config)["LOGIN"]["password"].asInt() << std::endl;
         std::cout << "baseurl: " << (*config)["COMM"]["baseurl"].asString() << std::endl;
-        confreak::Comm comm = confreak::Comm((*config)["COMM"]["baseurl"].asString());
+        confreak::Comm comm = confreak::Comm((*config)["COMM"]["baseurl"].asString(), 
+                (*config)["COMM"]["serial"].asString());
         confreak::Comm::Args args = {confreak::Pram("email", (*config)["LOGIN"]["email"].asString()),
             confreak::Pram("password", (*config)["LOGIN"]["password"].asString())};
-        std::string reqName = "loadAllApplications";
-        std::string json = comm.loadAppData(reqName, args);
-        std::cout << json << std::endl;
+        confreak::ConfreakRt cr = comm.loadAppData(args);
 
-        confreak::ConfreakApps test(json);
-        std::cout << test << std::endl;
+        if ( cr.rc == 0 )
+        {
+            confreak::ConfreakApps test(cr.rs);
+            std::cout << test << std::endl;
+        }
+        else
+        {
+            std::cerr << cr.rc << std::endl;
+            std::cerr << cr.rs << std::endl;
+        }
+        std::cout << "serial write:" << comm.serialWrite("Steve") << std::endl;
+        //cr = comm.serialRead();
+        //std::cout << "Serial Read:" << cr.rc << "-" << cr.rs << std::endl;
     }
     catch(const std::exception& e)
     {

@@ -1,6 +1,6 @@
 #include <serial_helper.h>
 
-int openSerial(char* portName, int mode)
+int openSerial(const char* portName, int mode)
 {
     return open(portName, mode);
 }
@@ -33,7 +33,7 @@ int configSerial(int fd)
 }
 
 
-int writeSerial(int fd, char* buf)
+int writeSerial(int fd, const char* buf)
 {
     return write(fd, buf, sizeof(buf));
 }
