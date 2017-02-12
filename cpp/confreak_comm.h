@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
+#include <unordered_map>
 #include <confreak_schema.h>
 
 extern "C" {
@@ -13,35 +14,36 @@ extern "C" {
 
 namespace confreak {
 
-struct Pram
-{
-    std::string name;
-    std::string value;
-    Pram(const std::string& n, const std::string& v):
-    name(n), value(v)
-    {}
-};
-
 class Comm {
 public:
-    typedef std::vector<Pram> Args;
-    Comm(const std::string& baseUrl, const std::string& serialPortName);
+    typedef std::unordered_map<std::string, std::string> Args;
+    Comm(const std::string& baseUrl, const std::string& serialPortName, const Args& args);
+    Comm();
     ~Comm();
 
-    ConfreakRt loadAppData(Args& args); 
+    ConfreakRt loadAppData(const Args& args); 
+    
+    ConfreakRt loadAppData(); 
 
     int serialWrite(const std::string& data);
 
     ConfreakRt serialRead();
+    
+    Args& args();
 
 private:
-    EasyCurl d_ec;
-    std::string d_baseUrl;
-    int d_serialfd;
+    EasyCurl        d_ec;
+    std::string     d_baseUrl;
+    int             d_serialfd;
+    Args            d_args;
 
-    ConfreakRt getWithArgs(const std::string& reqName, Args& args);
-
+    ConfreakRt getWithArgs(const std::string& reqName, const Args& args);
 };
+
+inline Comm::Args& Comm::args()
+{
+    return d_args;
+}
 
 } // end of namespace confreak
 #endif

@@ -1,11 +1,12 @@
 #include <confreak_comm.h>
+#include <config_loader.h>
 
 namespace confreak {
 
 const int SERIAL_MODE_WR_NO_TERMINAL_CONTROL = O_RDWR | O_NOCTTY;
 
-Comm::Comm(const std::string& baseUrl, const std::string& serialPortName):
-d_baseUrl(baseUrl)
+Comm::Comm(const std::string& baseUrl, const std::string& serialPortName, const Args& args):
+d_baseUrl(baseUrl), d_args(args)
 {
     d_serialfd = openSerial(serialPortName.c_str(), SERIAL_MODE_WR_NO_TERMINAL_CONTROL);
     if ( d_serialfd == -1 )
@@ -19,18 +20,21 @@ d_baseUrl(baseUrl)
     std::cout << "Serial port: " << serialPortName << " opened successfully" << std::endl;
 };
 
+Comm::Comm()
+{}
+
 Comm::~Comm()
 {
     closeSerial(d_serialfd);
 }
 
-ConfreakRt Comm::getWithArgs(const std::string& reqName, Args& args)
+ConfreakRt Comm::getWithArgs(const std::string& reqName, const Args& args)
 {
     std::string url = d_baseUrl;
     url += reqName;
-    for ( int i = 0; i < args.size(); ++i )
+    for ( auto it = args.begin(); it != args.end(); ++it )
     {
-        if ( i == 0 )
+        if ( it == args.begin() )
         {
             url += "/?";
         }
@@ -38,18 +42,22 @@ ConfreakRt Comm::getWithArgs(const std::string& reqName, Args& args)
         {
             url += "&";
         }
-        url += args[i].name + "=" + args[i].value;
+        url += it->first + "=" + it->second;
     }
     ConfreakRt cr;
     cr.rc = d_ec.httpGet(url, cr.rs);
     return cr;
 }
 
-ConfreakRt Comm::loadAppData(Args& args)
+ConfreakRt Comm::loadAppData(const Args& args)
 {
     return getWithArgs("loadAllApplications", args); 
 }
 
+ConfreakRt Comm::loadAppData()
+{
+    return loadAppData(d_args); 
+}
 
 int Comm::serialWrite(const std::string& data)
 {

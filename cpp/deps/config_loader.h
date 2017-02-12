@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <cassert>
 
 using namespace std;
 
@@ -71,6 +72,12 @@ public:
         {
             d_config = new Config(fileName);
         }
+        return d_config;
+    }
+    
+    static Config* getInstance()
+    {
+        assert(d_config);
         return d_config;
     }
 

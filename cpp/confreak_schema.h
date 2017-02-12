@@ -46,6 +46,8 @@ class ConfreakApps {
 public:
     typedef std::unordered_map<std::string, Application> ConApp;
     ConfreakApps(const std::string& jsonStr);
+    ConfreakApps(const std::string& jsonStr, Application::AppType appType);
+    ConfreakApps();
 
     ConApp& apps()
     {

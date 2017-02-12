@@ -10,10 +10,11 @@ include_directories("${PROJECT_BINARY_DIR}/deps")
 
 #source files
 #set(SOURCES confreak.m.cpp) #Manually include the source file
-file(GLOB SOURCES "./*.cpp" "deps/*.cpp" "deps/*.c")
+file(GLOB SOURCES  "deps/*.cpp" "deps/*.c" "*.cpp")
 
 #executable
 add_executable(confreak.tsk  ${SOURCES}  )
 
 #Adding LIBS
 target_link_libraries(confreak.tsk curl)
+target_link_libraries(confreak.tsk pthread)

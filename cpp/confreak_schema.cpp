@@ -39,6 +39,26 @@ ConfreakApps::ConfreakApps(const std::string& jsonStr)
     }
 }
 
+ConfreakApps::ConfreakApps(const std::string& jsonStr, Application::AppType type)
+{
+    JSONValue *data = JSON::Parse(jsonStr.c_str());
+    std::vector<std::wstring> keys = data->ObjectKeys();
+    for ( auto key = keys.begin(); key != keys.end(); ++key )
+    {
+        JSONValue *row = data->Child(key->c_str());
+        std::string appName = w2s(row->Child(L"AppName")->AsString());
+        std::string appDesc = w2s(row->Child(L"AppDesc")->AsString());
+        Application::AppType appType = Application::AppTypeMap[row->Child(L"AppType")->AsNumber()];
+        if ( type == appType )
+        {
+            bool boolData = row->Child(L"BoolData")->AsBool();
+            bool numData = row->Child(L"NumericData")->AsNumber();
+            d_apps[appName] = Application(appName, appDesc, appType, boolData, numData);
+        }
+    }
+}
 
+ConfreakApps::ConfreakApps()
+{}
 }; // end of namespace confreak
 
