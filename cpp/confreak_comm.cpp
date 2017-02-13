@@ -6,7 +6,7 @@ namespace confreak {
 const int SERIAL_MODE_WR_NO_TERMINAL_CONTROL = O_RDWR | O_NOCTTY;
 
 Comm::Comm(const std::string& baseUrl, const std::string& serialPortName, const Args& args):
-d_baseUrl(baseUrl), d_args(args)
+d_baseUrl(baseUrl), d_args(args), d_ec()
 {
     d_serialfd = openSerial(serialPortName.c_str(), SERIAL_MODE_WR_NO_TERMINAL_CONTROL);
     if ( d_serialfd == -1 )
@@ -36,7 +36,7 @@ ConfreakRt Comm::getWithArgs(const std::string& reqName, const Args& args)
     {
         if ( it == args.begin() )
         {
-            url += "/?";
+            url += "?";
         }
         else
         {
@@ -45,6 +45,7 @@ ConfreakRt Comm::getWithArgs(const std::string& reqName, const Args& args)
         url += it->first + "=" + it->second;
     }
     ConfreakRt cr;
+    std::cout << "URL:" << url << std::endl;
     cr.rc = d_ec.httpGet(url, cr.rs);
     return cr;
 }
@@ -59,6 +60,18 @@ ConfreakRt Comm::loadAppData()
     return loadAppData(d_args); 
 }
 
+ConfreakRt Comm::updateAppData(
+        const std::string& appName, 
+        const std::string& data,
+        Application::AppType type)
+{
+    Args args = d_args;
+    args["appname"]     = appName;
+    args["data"]        = data;
+    args["apptype"]     = std::to_string(type);
+    return getWithArgs("updateAppData", args);
+}
+
 int Comm::serialWrite(const std::string& data)
 {
     return writeSerial(d_serialfd, data.c_str());
@@ -67,9 +80,9 @@ int Comm::serialWrite(const std::string& data)
 ConfreakRt Comm::serialRead()
 {
     ConfreakRt cr;
-    char buf[255];
-    cr.rc = readSerial(d_serialfd, buf, 255);
-    cr.rs = std::string(buf);
+    char buf[1024];
+    cr.rc = readSerial(d_serialfd, buf, 1024);
+    cr.rs = std::string(buf, cr.rc);
     return cr;
 }
 

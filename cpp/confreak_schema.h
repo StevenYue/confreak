@@ -14,6 +14,12 @@ struct ConfreakRt
     std::string     rs; //return string
 };
 
+struct AppTracker
+{
+    AppTracker(const std::string& jsonStr);
+    std::unordered_map<std::string, std::string> info;
+};
+
 class Application {
 public:
     enum AppType  {CONTROL_APP, MONITOR_APP};

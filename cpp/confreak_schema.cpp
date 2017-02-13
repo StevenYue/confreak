@@ -4,7 +4,7 @@ namespace confreak {
 
 std::string w2s(const std::wstring& ws)
 {
-    return std::string((const char*)&ws[0], sizeof(wchar_t)/sizeof(char)*ws.size());
+    return std::string(ws.begin(), ws.end());
 }
 
 std::unordered_map<int, Application::AppType> Application::AppTypeMap = 
@@ -60,5 +60,35 @@ ConfreakApps::ConfreakApps(const std::string& jsonStr, Application::AppType type
 
 ConfreakApps::ConfreakApps()
 {}
+
+AppTracker::AppTracker(const std::string& jsonStr)
+{
+    JSONValue *json = JSON::Parse(jsonStr.c_str());
+    if ( json == NULL )
+    {
+        return;
+    }
+    std::vector<std::wstring> keys = json->ObjectKeys();
+    for ( auto key = keys.begin(); key != keys.end(); ++key )
+    {
+        std::cout << "key:" << w2s(*key) << std::endl;
+        std::cout << "val:" << w2s(json->Child(key->c_str())->AsString()) << std::endl;
+        std::string k(w2s(*key).c_str());
+        std::string v(w2s(json->Child(key->c_str())->AsString()).c_str());
+        std::cout << "k:" << k << std::endl;
+        std::cout << "v:" << v << std::endl;
+        info.insert({k,v});
+    }
+    std::string t("test");
+    info[t] = t;
+    for (auto it = info.begin(); it != info.end(); ++it )
+    {
+        std::cout << it->first << "--" << it->second << std::endl; 
+    }
+    std::cout << "11:" << info["appname"] << std::endl;
+    std::cout << "22:" << info["data"] << std::endl;
+    std::cout << "33:" << info["test"] << std::endl;
+}
+
 }; // end of namespace confreak
 

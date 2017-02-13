@@ -4,31 +4,30 @@ namespace confreak {
 
 ConfreakJail::ConfreakJail()
 {
-    Warden wardenControl(Application::CONTROL_APP, controlDuty);
-    Warden wardenMonitor(Application::MONITOR_APP, monitorDuty);
-    pthread_t threadControl, threadMonitor;
-    d_wardens.push_back(std::make_pair(wardenControl, threadControl));
-    d_wardens.push_back(std::make_pair(wardenMonitor, threadMonitor));
-    std::cout << "Jail load up" << std::endl;
+    std::cout << "Empty Jail load up" << std::endl;
+}
+
+ConfreakJail::ConfreakJail(const std::string& baseUrl, const std::string& serialPort, const Comm::Args& args):
+d_controlWarden(Application::CONTROL_APP, controlDuty, baseUrl, serialPort, args),
+d_monitorWarden(Application::MONITOR_APP, monitorDuty, baseUrl, serialPort, args)
+{
+    std::cout << "Jail loaded up" << std::endl;
 }
 
 ConfreakJail::~ConfreakJail()
 {
-    for ( auto it = d_wardens.begin(); it != d_wardens.end(); ++it )
-    {
-        int rc = pthread_join(it->second, NULL);  
-        assert(!rc);
-    }
+    int rc = pthread_join(d_monitorThread, NULL);  
+    assert(!rc);
+    rc = pthread_join(d_controlThread, NULL);  
+    assert(!rc);
 }
 
 void ConfreakJail::start()
 {
-    
-    for ( auto it = d_wardens.begin(); it != d_wardens.end(); ++it )
-    {
-        int rc = pthread_create(&it->second, NULL, it->first.duty(), &it->first); 
-        assert(!rc);
-    }
+    //int rc = pthread_create(&d_controlThread, NULL, d_controlWarden.duty(), &d_controlWarden); 
+    //assert(!rc);
+    int rc = pthread_create(&d_monitorThread, NULL, d_monitorWarden.duty(), &d_monitorWarden); 
+    assert(!rc);
     std::cout << "Jail Open" << std::endl;
 }
 

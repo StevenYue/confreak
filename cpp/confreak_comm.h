@@ -24,6 +24,8 @@ public:
     ConfreakRt loadAppData(const Args& args); 
     
     ConfreakRt loadAppData(); 
+    
+    ConfreakRt updateAppData(const std::string& appName, const std::string& data, Application::AppType type);
 
     int serialWrite(const std::string& data);
 

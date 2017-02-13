@@ -13,9 +13,14 @@ int main(int argc, char* argv[])
     }
     try
     {
-        Config::getInstance(argv[1]);
-        confreak::ConfreakJail jail;
-        jail.start();
+        Config* config = Config::getInstance(argv[1]);
+        std::string baseUrl = (*config)["COMM"]["baseurl"].asString();
+        std::string serialPort = (*config)["COMM"]["serial"].asString();
+        confreak::Comm::Args args = {{std::string("email"), (*config)["LOGIN"]["email"].asString()},
+            {std::string("password"), (*config)["LOGIN"]["password"].asString()}};
+        confreak::ConfreakJail jail(baseUrl, serialPort, args);
+        std::cout << "FUCK" << std::endl;
+        jail.start(); 
     }
     catch(const std::exception& e)
     {

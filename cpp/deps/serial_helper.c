@@ -27,7 +27,7 @@ int configSerial(int fd)
     SerialPortSettings.c_oflag &= ~OPOST;/*No Output Processing*/
 
     /* Setting Time outs */
-    SerialPortSettings.c_cc[VMIN] = 10; /* Read at least 10 characters */
+    SerialPortSettings.c_cc[VMIN] = 0; /* Read at least 0 characters */
     SerialPortSettings.c_cc[VTIME] = 0; /* Wait indefinetly   */
     return tcsetattr(fd,TCSANOW,&SerialPortSettings);
 }

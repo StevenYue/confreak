@@ -14,7 +14,10 @@ namespace confreak{
 class Warden {
 public:
     typedef void*(*Duty)(void*);
-    Warden(Application::AppType appType, Duty duty);
+    Warden(Application::AppType appType, Duty duty, 
+            const std::string& baseUrl, const std::string serialPort,
+            const Comm::Args& args);
+    Warden();
 
     ~Warden();
 
@@ -25,7 +28,8 @@ public:
     }
     
     Duty&           duty();
-
+    Comm&           comm();
+    ConfreakApps&   apps();
 private:
     Duty            d_duty;
     Comm            d_comm;

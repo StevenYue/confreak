@@ -10,19 +10,24 @@ extern "C" {
 
 #include <confreak_warden.h>
 #include <confreak_schema.h>
-#include <vector>
+#include <confreak_comm.h>
+#include <string>
 namespace confreak { 
 
 class ConfreakJail {
 public:
     ConfreakJail(); 
+    ConfreakJail(const std::string& url, const std::string& serial, const Comm::Args& args); 
     
     ~ConfreakJail(); 
   
     void start();
 
 private:
-    std::vector<std::pair<Warden, pthread_t> >  d_wardens;
+    Warden          d_controlWarden;
+    Warden          d_monitorWarden;
+    pthread_t       d_controlThread;
+    pthread_t       d_monitorThread;
 
 };
 
