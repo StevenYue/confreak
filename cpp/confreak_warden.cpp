@@ -50,14 +50,12 @@ void* monitorDuty(void* data)
             std::cerr << "MonitorDuty, serial read error:" << cr.rs << std::endl; 
             continue;
         }
-        std::cout << "Read" << cr.rc << "bytes, content:" << cr.rs << std::endl;
+        std::cout << "Read " << cr.rc << " bytes, content:" << cr.rs << std::endl;
         AppTracker at(cr.rs);
         if ( at.info.size() == 0 )
         {
             continue;
         }
-        std::cout << at.info["appname"] << std::endl;
-        std::cout << at.info["data"] << std::endl;
         cr = comm.updateAppData(at.info["appname"], at.info["data"], Application::MONITOR_APP);
         if ( cr.rc < 0 )
         {

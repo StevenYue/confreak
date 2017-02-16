@@ -1,4 +1,6 @@
 #include <confreak_schema.h>
+#include <iostream>
+#include <sstream>
 
 namespace confreak {
 
@@ -22,26 +24,15 @@ Application::Application(const std::string& appName, const std::string& appDesc,
 Application::Application()
 {}
 
-ConfreakApps::ConfreakApps(const std::string& jsonStr)
-{
-    JSONValue *data = JSON::Parse(jsonStr.c_str());
-    std::vector<std::wstring> keys = data->ObjectKeys();
-    for ( auto key = keys.begin(); key != keys.end(); ++key )
-    {
-        JSONValue *row = data->Child(key->c_str());
-        std::string appName = w2s(row->Child(L"AppName")->AsString());
-        std::string appDesc = w2s(row->Child(L"AppDesc")->AsString());
-        Application::AppType appType = Application::AppTypeMap[row->Child(L"AppType")->AsNumber()];
-        bool boolData = row->Child(L"BoolData")->AsBool();
-        bool numData = row->Child(L"NumericData")->AsNumber();
-
-        d_apps[appName] = Application(appName, appDesc, appType, boolData, numData);
-    }
-}
-
 ConfreakApps::ConfreakApps(const std::string& jsonStr, Application::AppType type)
 {
     JSONValue *data = JSON::Parse(jsonStr.c_str());
+    if ( !data )
+    {
+        std::ostringstream os;
+        os << "Error initializ ConfreakApps, jsonstr: " << jsonStr;
+        throw std::runtime_error(os.str());
+    }
     std::vector<std::wstring> keys = data->ObjectKeys();
     for ( auto key = keys.begin(); key != keys.end(); ++key )
     {
@@ -49,7 +40,7 @@ ConfreakApps::ConfreakApps(const std::string& jsonStr, Application::AppType type
         std::string appName = w2s(row->Child(L"AppName")->AsString());
         std::string appDesc = w2s(row->Child(L"AppDesc")->AsString());
         Application::AppType appType = Application::AppTypeMap[row->Child(L"AppType")->AsNumber()];
-        if ( type == appType )
+        if ( type == appType || type == Application::ALL_APP )
         {
             bool boolData = row->Child(L"BoolData")->AsBool();
             bool numData = row->Child(L"NumericData")->AsNumber();
@@ -64,30 +55,16 @@ ConfreakApps::ConfreakApps()
 AppTracker::AppTracker(const std::string& jsonStr)
 {
     JSONValue *json = JSON::Parse(jsonStr.c_str());
-    if ( json == NULL )
+    if ( !json )
     {
+        std::cerr << "AppTracker initialization error" << std::endl;
         return;
     }
     std::vector<std::wstring> keys = json->ObjectKeys();
     for ( auto key = keys.begin(); key != keys.end(); ++key )
     {
-        std::cout << "key:" << w2s(*key) << std::endl;
-        std::cout << "val:" << w2s(json->Child(key->c_str())->AsString()) << std::endl;
-        std::string k(w2s(*key).c_str());
-        std::string v(w2s(json->Child(key->c_str())->AsString()).c_str());
-        std::cout << "k:" << k << std::endl;
-        std::cout << "v:" << v << std::endl;
-        info.insert({k,v});
+        info[w2s(*key).c_str()] = w2s(json->Child(key->c_str())->AsString()).c_str();
     }
-    std::string t("test");
-    info[t] = t;
-    for (auto it = info.begin(); it != info.end(); ++it )
-    {
-        std::cout << it->first << "--" << it->second << std::endl; 
-    }
-    std::cout << "11:" << info["appname"] << std::endl;
-    std::cout << "22:" << info["data"] << std::endl;
-    std::cout << "33:" << info["test"] << std::endl;
 }
 
 }; // end of namespace confreak

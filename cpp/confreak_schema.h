@@ -22,7 +22,7 @@ struct AppTracker
 
 class Application {
 public:
-    enum AppType  {CONTROL_APP, MONITOR_APP};
+    enum AppType  {CONTROL_APP, MONITOR_APP, ALL_APP};
     static std::unordered_map<int, AppType>   AppTypeMap;
     static std::unordered_map<int, std::string>   AppTypeStrMap;
     Application(const std::string& appName, const std::string& appDesc, 
@@ -51,8 +51,7 @@ private:
 class ConfreakApps {
 public:
     typedef std::unordered_map<std::string, Application> ConApp;
-    ConfreakApps(const std::string& jsonStr);
-    ConfreakApps(const std::string& jsonStr, Application::AppType appType);
+    ConfreakApps(const std::string& jsonStr, Application::AppType appType = Application::ALL_APP);
     ConfreakApps();
 
     ConApp& apps()

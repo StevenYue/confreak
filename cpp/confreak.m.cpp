@@ -19,7 +19,6 @@ int main(int argc, char* argv[])
         confreak::Comm::Args args = {{std::string("email"), (*config)["LOGIN"]["email"].asString()},
             {std::string("password"), (*config)["LOGIN"]["password"].asString()}};
         confreak::ConfreakJail jail(baseUrl, serialPort, args);
-        std::cout << "FUCK" << std::endl;
         jail.start(); 
     }
     catch(const std::exception& e)

@@ -11,14 +11,9 @@ private:
     CURL* d_curl;
 
 public:
-    EasyCurl()
-    {
-        d_curl = curl_easy_init();
-        if ( !d_curl ) 
-        {
-            throw std::runtime_error("Error initializing curl");
-        }
-    }
+    EasyCurl():
+        d_curl(NULL)
+    {}
     
     ~EasyCurl()
     {
@@ -34,6 +29,15 @@ public:
     //return 0 on success, -1 on failure
     int httpGet(const std::string& url, std::string& rstr)
     {
+        if ( !d_curl ) 
+        {
+            d_curl = curl_easy_init();
+            if ( !d_curl )
+            {
+                rstr = std::string( "Error Curl: initialization error");
+                return -1;
+            }
+        }
         CURLcode res;
         std::string s;
         curl_easy_setopt(d_curl, CURLOPT_URL, url.c_str());
