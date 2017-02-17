@@ -7,27 +7,36 @@ ConfreakJail::ConfreakJail()
     std::cout << "Empty Jail load up" << std::endl;
 }
 
-ConfreakJail::ConfreakJail(const std::string& baseUrl, const std::string& serialPort, const Comm::Args& args):
-d_controlWarden(Application::CONTROL_APP, controlDuty, baseUrl, serialPort, args),
-d_monitorWarden(Application::MONITOR_APP, monitorDuty, baseUrl, serialPort, args)
+ConfreakJail::ConfreakJail(const std::string& baseUrl, 
+        const std::string& serialPort, 
+        const Comm::Args& args, 
+        const JOBS& jobs)
 {
+    for ( auto it = jobs.begin(); it != jobs.end(); ++ it )
+    {
+        d_wardens.push_back(Warden(it->first, it->second, baseUrl, serialPort, args));
+    }
     std::cout << "Jail loaded up" << std::endl;
 }
 
 ConfreakJail::~ConfreakJail()
 {
-    int rc = pthread_join(d_monitorThread, NULL);  
-    assert(!rc);
-    rc = pthread_join(d_controlThread, NULL);  
-    assert(!rc);
+    for ( auto it = d_jobs.begin(); it != d_jobs.end(); ++it )
+    {
+        int rc = pthread_join(*it, NULL);  
+        assert(!rc);
+    }
 }
 
 void ConfreakJail::start()
 {
-    //int rc = pthread_create(&d_controlThread, NULL, d_controlWarden.duty(), &d_controlWarden); 
-    //assert(!rc);
-    int rc = pthread_create(&d_monitorThread, NULL, d_monitorWarden.duty(), &d_monitorWarden); 
-    assert(!rc);
+    for ( auto it = d_wardens.begin(); it != d_wardens.end(); ++it )
+    {
+        pthread_t thread;
+        int rc = pthread_create(&thread, NULL, it->duty(), &(*it)); 
+        assert(!rc);
+        d_jobs.push_back(thread);
+    }
     std::cout << "Jail Open" << std::endl;
 }
 

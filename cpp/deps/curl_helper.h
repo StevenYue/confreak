@@ -11,13 +11,24 @@ private:
     CURL* d_curl;
 
 public:
-    EasyCurl():
-        d_curl(NULL)
-    {}
+    EasyCurl()
+    {
+        d_curl = curl_easy_init();
+        if ( !d_curl ) 
+        {
+            throw std::runtime_error("Error initializing curl");
+        }
+    }
     
     ~EasyCurl()
+    {}
+
+    void EasyCurlCleanUp()
     {
-        curl_easy_cleanup(d_curl);
+        if ( !d_curl )
+        {
+            curl_easy_cleanup(d_curl);
+        }
     }
 
     static size_t writefunc(void *contents, size_t size, size_t nmemb, void* s)
@@ -29,15 +40,6 @@ public:
     //return 0 on success, -1 on failure
     int httpGet(const std::string& url, std::string& rstr)
     {
-        if ( !d_curl ) 
-        {
-            d_curl = curl_easy_init();
-            if ( !d_curl )
-            {
-                rstr = std::string( "Error Curl: initialization error");
-                return -1;
-            }
-        }
         CURLcode res;
         std::string s;
         curl_easy_setopt(d_curl, CURLOPT_URL, url.c_str());

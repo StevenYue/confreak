@@ -4,6 +4,8 @@
 #include <string>
 #include <confreak_jail.h>
 
+using namespace confreak;
+
 int main(int argc, char* argv[])
 {
     if ( argc != 2 )
@@ -16,9 +18,19 @@ int main(int argc, char* argv[])
         Config* config = Config::getInstance(argv[1]);
         std::string baseUrl = (*config)["COMM"]["baseurl"].asString();
         std::string serialPort = (*config)["COMM"]["serial"].asString();
-        confreak::Comm::Args args = {{std::string("email"), (*config)["LOGIN"]["email"].asString()},
+        Comm::Args args = {{std::string("email"), (*config)["LOGIN"]["email"].asString()},
             {std::string("password"), (*config)["LOGIN"]["password"].asString()}};
-        confreak::ConfreakJail jail(baseUrl, serialPort, args);
+        ConfreakJail::JOBS jobs; 
+        if ( (*config)["APPS"]["monitorapp"].asBool() )
+        {
+            jobs.push_back(std::make_pair(Application::MONITOR_APP, monitorDuty));
+        }
+        if ( (*config)["APPS"]["controlapp"].asBool() )
+        {
+            jobs.push_back(std::make_pair(Application::CONTROL_APP, controlDuty));
+        }
+
+        ConfreakJail jail(baseUrl, serialPort, args, jobs);
         jail.start(); 
     }
     catch(const std::exception& e)

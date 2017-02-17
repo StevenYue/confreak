@@ -15,6 +15,7 @@ public:
     Value():d_val(""){}
     Value(const string& val):d_val(val){}
     int asInt() {std::stoi(d_val);} //stoi() CAN THROW Bomb!!!
+    bool asBool() {std::stoi(d_val) == 1;} //stoi() CAN THROW Bomb!!!
     const string& asString()   {return d_val;}
 };
 

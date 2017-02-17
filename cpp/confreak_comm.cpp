@@ -25,7 +25,7 @@ Comm::Comm()
 
 Comm::~Comm()
 {
-    closeSerial(d_serialfd);
+    //closeSerial(d_serialfd);
 }
 
 ConfreakRt Comm::getWithArgs(const std::string& reqName, const Args& args)
@@ -82,7 +82,14 @@ ConfreakRt Comm::serialRead()
     ConfreakRt cr;
     char buf[1024];
     cr.rc = readSerial(d_serialfd, buf, 1024);
-    cr.rs = std::string(buf, cr.rc);
+    if ( cr.rc < 0 )
+    {
+        cr.rs = std::string("Serial Read error, read negative bytes");
+    }
+    else
+    {
+        cr.rs = std::string(buf, cr.rc);
+    }
     return cr;
 }
 
