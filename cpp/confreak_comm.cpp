@@ -17,7 +17,7 @@ d_baseUrl(baseUrl), d_args(args), d_ec()
     {
         throw std::runtime_error("Error config serial port");
     }
-    std::cout << "Serial port: " << serialPortName << " opened successfully" << std::endl;
+    LOG_INFO << "Serial port: " << serialPortName << " opened successfully" << LOG_END;
 };
 
 Comm::Comm()
@@ -45,7 +45,7 @@ ConfreakRt Comm::getWithArgs(const std::string& reqName, const Args& args)
         url += it->first + "=" + it->second;
     }
     ConfreakRt cr;
-    std::cout << "URL:" << url << std::endl;
+    LOG_INFO << "URL:" << url << LOG_END;
     cr.rc = d_ec.httpGet(url, cr.rs);
     return cr;
 }

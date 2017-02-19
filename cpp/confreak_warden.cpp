@@ -12,7 +12,7 @@ d_duty(duty), d_comm(baseUrl, serialPort, args)
     confreak::ConfreakRt cr = d_comm.loadAppData();
     assert ( cr.rc == 0 );
     d_apps = ConfreakApps(cr.rs, appType);
-    std::cout << "Warden " << Application::AppTypeStrMap[appType] << " badged in" << std::endl;
+    LOG_INFO << "Warden " << Application::AppTypeStrMap[appType] << " badged in" << LOG_END;
 }
 
 Warden::Warden()
@@ -39,7 +39,7 @@ ConfreakApps& Warden::apps()
 void* monitorDuty(void* data)
 {
     Warden* wardenPtr = (Warden*)(data);
-    std::cout << *wardenPtr << std::endl;
+    LOG_INFO << *wardenPtr << LOG_END;
     Comm& comm = wardenPtr->comm();
     while ( true )
     {
@@ -47,10 +47,10 @@ void* monitorDuty(void* data)
         ConfreakRt cr = comm.serialRead();
         if ( cr.rc < 0 )
         {
-            std::cerr << "MonitorDuty, serial read error:" << cr.rs << std::endl; 
+            LOG_ERROR << "MonitorDuty, serial read error:" << cr.rs << LOG_END; 
             continue;
         }
-        std::cout << "Read " << cr.rc << " bytes, content:" << cr.rs << std::endl;
+        LOG_INFO << "Read " << cr.rc << " bytes, content:" << cr.rs << LOG_END;
         AppTracker at(cr.rs);
         if ( at.info.size() == 0 )
         {
@@ -59,7 +59,7 @@ void* monitorDuty(void* data)
         cr = comm.updateAppData(at.info["appname"], at.info["data"], Application::MONITOR_APP);
         if ( cr.rc < 0 )
         {
-            std::cerr << "MonitorDuty, update app data error:" << cr.rs << std::endl; 
+            LOG_ERROR << "MonitorDuty, update app data error:" << cr.rs << LOG_END; 
         }
     }
     return NULL;    
@@ -68,11 +68,11 @@ void* monitorDuty(void* data)
 void* controlDuty(void* data)
 {
     Warden* wardenPtr = (Warden*)(data);
-    std::cout << *wardenPtr << std::endl;
+    LOG_INFO << *wardenPtr << LOG_END;
     while ( true )
     {
         sleep(2);
-        std::cout << *wardenPtr << std::endl;
+        LOG_INFO << *wardenPtr << LOG_END;
     }
     return NULL;    
 }

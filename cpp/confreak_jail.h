@@ -13,6 +13,7 @@ extern "C" {
 #include <confreak_comm.h>
 #include <vector>
 #include <string>
+#include <logger.h>
 namespace confreak { 
 
 class ConfreakJail {

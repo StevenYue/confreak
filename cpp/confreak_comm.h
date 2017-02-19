@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <confreak_schema.h>
+#include <logger.h>
 
 extern "C" {
 #include <serial_helper.h>

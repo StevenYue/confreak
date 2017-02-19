@@ -4,7 +4,7 @@ namespace confreak {
 
 ConfreakJail::ConfreakJail()
 {
-    std::cout << "Empty Jail load up" << std::endl;
+    LOG_INFO << "Empty Jail load up" << LOG_END;
 }
 
 ConfreakJail::ConfreakJail(const std::string& baseUrl, 
@@ -16,7 +16,7 @@ ConfreakJail::ConfreakJail(const std::string& baseUrl,
     {
         d_wardens.push_back(Warden(it->first, it->second, baseUrl, serialPort, args));
     }
-    std::cout << "Jail loaded up" << std::endl;
+    LOG_INFO << "Jail loaded up" << LOG_END;
 }
 
 ConfreakJail::~ConfreakJail()
@@ -37,7 +37,7 @@ void ConfreakJail::start()
         assert(!rc);
         d_jobs.push_back(thread);
     }
-    std::cout << "Jail Open" << std::endl;
+    LOG_INFO << "Jail Open" << LOG_END;
 }
 
 }  //end of namespace confreak

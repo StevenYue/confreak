@@ -57,7 +57,7 @@ AppTracker::AppTracker(const std::string& jsonStr)
     JSONValue *json = JSON::Parse(jsonStr.c_str());
     if ( !json )
     {
-        std::cerr << "AppTracker initialization error" << std::endl;
+        LOG_ERROR << "AppTracker initialization error" << LOG_END;
         return;
     }
     std::vector<std::wstring> keys = json->ObjectKeys();

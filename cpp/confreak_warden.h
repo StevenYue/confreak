@@ -7,6 +7,7 @@
 #include <confreak_schema.h>
 #include <confreak_comm.h>
 #include <cassert>
+#include <logger.h>
 
 namespace confreak{ 
 

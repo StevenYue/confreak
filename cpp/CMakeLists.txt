@@ -4,8 +4,8 @@ add_definitions(-std=c++11)
 
 #Directories
 include_directories("${PROJECT_BINARY_DIR}")
-include_directories("/usr/lib/x86_64-linux-gnu/")
 include_directories("${PROJECT_BINARY_DIR}/deps")
+include_directories("/usr/lib/x86_64-linux-gnu/")
 #include_directories("/home/s/workspace/cpp/SimpleJSON/src/")
 
 #source files
