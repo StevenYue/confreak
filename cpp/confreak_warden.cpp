@@ -51,18 +51,31 @@ void* monitorDuty(void* data)
             continue;
         }
         LOG_INFO << "Read " << cr.rc << " bytes, content:" << cr.rs << LOG_END;
-        AppTracker at(cr.rs);
-        if ( at.info.size() == 0 )
+        try
         {
-            continue;
+            //have to catch this one, serial can send anything unparseable
+            ConfreakApps cApps(cr.rs);
+            for ( auto it = cApps.apps().begin(); it != cApps.apps().end(); ++it )
+            {
+                Application app = it->second;
+                if ( wardenPtr->apps().apps()[app.appName()] != app )
+                {
+                    //To avoid making unnecessary http call, don't update data if there is no change 
+                    wardenPtr->apps().apps()[app.appName()].updateAppData(app);
+                    cr = comm.updateAppData(app.appName(), app.numericData(), app.appType());
+                    if ( cr.rc < 0 )
+                    {
+                        LOG_ERROR << "MonitorDuty, update app data error:" << cr.rs << LOG_END; 
+                    }
+                }
+            }
         }
-        cr = comm.updateAppData(at.info["appname"], at.info["data"], Application::MONITOR_APP);
-        if ( cr.rc < 0 )
+        catch (const std::exception& e)
         {
-            LOG_ERROR << "MonitorDuty, update app data error:" << cr.rs << LOG_END; 
+            LOG_ERROR << "Monitor Warden error " << e.what() << LOG_END;
         }
     }
-    return NULL;    
+    return NULL;
 }
 
 void* controlDuty(void* data)

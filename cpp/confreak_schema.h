@@ -15,11 +15,6 @@ struct ConfreakRt
     std::string     rs; //return string
 };
 
-struct AppTracker
-{
-    AppTracker(const std::string& jsonStr);
-    std::unordered_map<std::string, std::string> info;
-};
 
 class Application {
 public:
@@ -27,9 +22,17 @@ public:
     static std::unordered_map<int, AppType>   AppTypeMap;
     static std::unordered_map<int, std::string>   AppTypeStrMap;
     Application(const std::string& appName, const std::string& appDesc, 
-            AppType appType, bool boolData, double numData); 
+            AppType appType, bool boolData, const std::string&  numData); 
     
     Application();
+
+    std::string&    appName(); 
+    std::string&    appDesc(); 
+    AppType&        appType();
+    bool&           boolData();
+    std::string&    numericData();
+
+    void updateAppData(const Application& o);
 
     friend std::ostream& operator<<(std::ostream& os, const Application& app)
     {
@@ -40,12 +43,34 @@ public:
         return os;
     }
 
+    friend bool operator==(const Application& l, const Application& r)
+    {
+        if ( l.d_appType == Application::CONTROL_APP )
+        {
+            return l.d_appName == r.d_appName && l.d_appType == r.d_appType && l.d_boolData == r.d_boolData;
+        }
+        else if ( l.d_appType == Application::MONITOR_APP )
+        {
+            return l.d_appName == r.d_appName && l.d_appType == r.d_appType && l.d_numericData == r.d_numericData; 
+        }
+        else
+        {
+            return l.d_appName == r.d_appName && l.d_appType == r.d_appType
+                && l.d_numericData == r.d_numericData && l.d_boolData == r.d_boolData; 
+        }
+    }
+
+    friend bool operator!=(const Application& l, const Application& r)
+    {
+        return !(l==r);
+    }
+
 private:
     std::string d_appName; 
     std::string d_appDesc; 
     AppType     d_appType;
     bool        d_boolData;
-    double      d_numericData;
+    std::string d_numericData;
     
 };
 
@@ -76,7 +101,10 @@ public:
     }
 private:
     ConApp d_apps;
-
+    
+    bool        saveJSON(const JSONValue* json, bool defaultValue);
+    double      saveJSON(const JSONValue* json, double defaultValue);
+    std::string saveJSON(const JSONValue* json, std::string&& defaultValue);
 };
 
 
