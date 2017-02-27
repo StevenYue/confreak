@@ -1,6 +1,7 @@
 #include <confreak_schema.h>
 #include <iostream>
 #include <sstream>
+#include <memory>
 
 namespace confreak {
 
@@ -64,7 +65,7 @@ std::string& Application::numericData()
 
 ConfreakApps::ConfreakApps(const std::string& jsonStr, Application::AppType type)
 {
-    JSONValue *data = JSON::Parse(jsonStr.c_str());
+    std::unique_ptr<JSONValue> data(JSON::Parse(jsonStr.c_str()));
     if ( !data )
     {
         std::ostringstream os;
