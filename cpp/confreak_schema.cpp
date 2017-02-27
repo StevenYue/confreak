@@ -87,7 +87,7 @@ ConfreakApps::ConfreakApps(const std::string& jsonStr, Application::AppType type
         if ( type == appType || type == Application::ALL_APP )
         {
             bool boolData       = saveJSON(row->Child(L"BoolData"), false);
-            std::string numData = saveJSON(row->Child(L"NumericData"), std::string(""));
+            std::string numData = std::to_string(saveJSON(row->Child(L"NumericData"),double(0)));
             d_apps[appName] = Application(appName, appDesc, appType, boolData, numData);
         }
     }

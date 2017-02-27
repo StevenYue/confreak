@@ -31,7 +31,6 @@ int main(int argc, char* argv[])
             jobs.push_back(std::make_pair(Application::CONTROL_APP, controlDuty));
         }
         Logger::getInstance((*config)["LOG"]["dir"].asString(), (*config)["LOG"]["filename"].asString());
-        LOG_INFO << "wtf" << LOG_END;
         ConfreakJail jail(baseUrl, serialPort, args, jobs);
         jail.start(); 
     }

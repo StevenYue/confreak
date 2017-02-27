@@ -55,10 +55,13 @@ void* monitorDuty(void* data)
         {
             //have to catch this one, serial can send anything unparseable
             ConfreakApps cApps(cr.rs);
+            LOG_INFO << cApps.apps().size() << LOG_END;
             for ( auto it = cApps.apps().begin(); it != cApps.apps().end(); ++it )
             {
                 Application app = it->second;
-                if ( wardenPtr->apps().apps()[app.appName()] != app )
+                //Only send http update for monitor app
+                if ( Application::MONITOR_APP == app.appType()
+                        && wardenPtr->apps().apps()[app.appName()] != app )
                 {
                     //To avoid making unnecessary http call, don't update data if there is no change 
                     wardenPtr->apps().apps()[app.appName()].updateAppData(app);
@@ -67,6 +70,14 @@ void* monitorDuty(void* data)
                     {
                         LOG_ERROR << "MonitorDuty, update app data error:" << cr.rs << LOG_END; 
                     }
+                    else
+                    {
+                        LOG_INFO << "MonitorDuty, update app data successful:" << cr.rs << LOG_END; 
+                    }
+                }
+                else
+                {
+                    LOG_INFO << "MonitorDuty, no need to send http update:" << LOG_END; 
                 }
             }
         }

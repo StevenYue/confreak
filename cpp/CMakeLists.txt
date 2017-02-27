@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.9)
 project (confreak)
+set(CMAKE_CXX_FLAGS_DEBUG)
 add_definitions(-std=c++11)
 
 #Directories
