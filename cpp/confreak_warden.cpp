@@ -65,7 +65,7 @@ void* monitorDuty(void* data)
                 {
                     //To avoid making unnecessary http call, don't update data if there is no change 
                     wardenPtr->apps().apps()[app.appName()].updateAppData(app);
-                    cr = comm.updateAppData(app.appName(), app.numericData(), app.appType());
+                    cr = comm.updateAppData(app);
                     if ( cr.rc < 0 )
                     {
                         LOG_ERROR << "MonitorDuty, update app data error:" << cr.rs << LOG_END; 

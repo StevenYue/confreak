@@ -21,16 +21,28 @@ public:
     enum AppType  {CONTROL_APP, MONITOR_APP, ALL_APP};
     static std::unordered_map<int, AppType>   AppTypeMap;
     static std::unordered_map<int, std::string>   AppTypeStrMap;
-    Application(const std::string& appName, const std::string& appDesc, 
-            AppType appType, bool boolData, const std::string&  numData); 
+    static std::unordered_map<std::string, AppType>   AppStrTypeMap;
+    Application(const std::string& appName, const std::string& appDesc, AppType appType, double numData); 
+    Application(const std::string& appName, const std::string& appDesc, AppType appType, const std::string& d); 
     
     Application();
 
     std::string&    appName(); 
     std::string&    appDesc(); 
     AppType&        appType();
-    bool&           boolData();
-    std::string&    numericData();
+    double&         data();
+
+    //Set d_appType given a string, return 0 on successful assignment, -1 on failure
+    int             setAppType(const std::string& tStr); 
+    
+    //return d_appType in a string format
+    std::string     appTypeAsString() const;
+
+    //return d_data in string format
+    std::string     dataAsString() const;
+    
+    //set d_data with a string, return 0 on successful assignment, -1 on failure
+    int            setData(const std::string& dStr);
 
     void updateAppData(const Application& o);
 
@@ -38,26 +50,13 @@ public:
     {
         os << "[AppName: " << app.d_appName << ", AppDesc: " << app.d_appDesc 
             << ", AppType: " << Application::AppTypeStrMap[app.d_appType] 
-            << ", BoolData: " << app.d_boolData
-            << ", NumericData: " << app.d_numericData << "]";
+            << ", Data: " << app.d_data << "]";
         return os;
     }
 
     friend bool operator==(const Application& l, const Application& r)
     {
-        if ( l.d_appType == Application::CONTROL_APP )
-        {
-            return l.d_appName == r.d_appName && l.d_appType == r.d_appType && l.d_boolData == r.d_boolData;
-        }
-        else if ( l.d_appType == Application::MONITOR_APP )
-        {
-            return l.d_appName == r.d_appName && l.d_appType == r.d_appType && l.d_numericData == r.d_numericData; 
-        }
-        else
-        {
-            return l.d_appName == r.d_appName && l.d_appType == r.d_appType
-                && l.d_numericData == r.d_numericData && l.d_boolData == r.d_boolData; 
-        }
+        return l.d_appName == r.d_appName && l.d_appType == r.d_appType && l.d_data == r.d_data;
     }
 
     friend bool operator!=(const Application& l, const Application& r)
@@ -69,8 +68,7 @@ private:
     std::string d_appName; 
     std::string d_appDesc; 
     AppType     d_appType;
-    bool        d_boolData;
-    std::string d_numericData;
+    double      d_data;
     
 };
 

@@ -14,34 +14,32 @@ std::unordered_map<int, Application::AppType> Application::AppTypeMap =
     {{0, Application::CONTROL_APP}, {1, Application::MONITOR_APP}};
 
 std::unordered_map<int, std::string> Application::AppTypeStrMap = 
-    {{0, std::string("ControlApp")}, {1, std::string("MonitorApp")}};
+    {{0, "ControlApp"}, {1, "MonitorApp"}};
 
-Application::Application(const std::string& appName, const std::string& appDesc, 
-    AppType appType, bool boolData, const std::string& numData):
-    d_appName(appName), d_appDesc(appDesc), d_appType(appType), 
-    d_boolData(boolData), d_numericData(numData)
+std::unordered_map<std::string, Application::AppType>   Application::AppStrTypeMap = 
+    {{"0", Application::CONTROL_APP}, {"1", Application::MONITOR_APP}};
+
+Application::Application(const std::string& appName, const std::string& appDesc, AppType appType, double numData):
+d_appName(appName), d_appDesc(appDesc), d_appType(appType), d_data(numData)
 {}
+
+Application::Application(
+    const std::string& appName, 
+    const std::string& appDesc, 
+    AppType appType, 
+    const std::string& d): 
+d_appName(appName), d_appDesc(appDesc), d_appType(appType)
+{
+    setData(d);
+}
 
 Application::Application()
 {}
 
 void Application::updateAppData(const Application& o)
 {
-    if ( o.d_appType == Application::CONTROL_APP )
-    {
-        this->d_boolData = o.d_boolData;
-    }
-    else if ( o.d_appType == Application::MONITOR_APP )
-    {
-        this->d_numericData = o.d_numericData; 
-    }
-    else
-    {
-        this->d_numericData = o.d_numericData;
-        this->d_boolData = o.d_boolData; 
-    }
+    this->d_data = o.d_data; 
 }
-
 std::string& Application::appName()
 {
     return d_appName;
@@ -54,13 +52,46 @@ Application::AppType& Application::appType()
 {
     return d_appType;
 }
-bool&        Application::boolData()
+double&     Application::data()
 {
-    return d_boolData;
+    return d_data;
 }
-std::string& Application::numericData()
+
+int Application::setAppType(const std::string& tStr)
 {
-    return d_numericData;
+    if ( Application::AppStrTypeMap.find(tStr) != Application::AppStrTypeMap.end() )
+    {
+        d_appType = Application::AppStrTypeMap[tStr];
+        return 0;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+std::string Application::appTypeAsString() const
+{
+    return std::to_string(d_appType);
+}
+
+std::string Application::dataAsString() const
+{
+    return std::to_string(d_data);
+}
+
+int Application::setData(const std::string& dStr)
+{
+    try 
+    {
+        d_data = std::stod(dStr);
+        return 0;
+    }
+    catch (const std::invalid_argument& ia)
+    {
+        d_data = 0;
+        return -1;
+    }
 }
 
 ConfreakApps::ConfreakApps(const std::string& jsonStr, Application::AppType type)
@@ -87,9 +118,8 @@ ConfreakApps::ConfreakApps(const std::string& jsonStr, Application::AppType type
         Application::AppType appType = Application::AppTypeMap[saveJSON(row->Child(L"AppType"), double(-1))];
         if ( type == appType || type == Application::ALL_APP )
         {
-            bool boolData       = saveJSON(row->Child(L"BoolData"), false);
-            std::string numData = std::to_string(saveJSON(row->Child(L"NumericData"),double(0)));
-            d_apps[appName] = Application(appName, appDesc, appType, boolData, numData);
+            double data = saveJSON(row->Child(L"Data"),double(0));
+            d_apps[appName] = Application(appName, appDesc, appType, data);
         }
     }
 }

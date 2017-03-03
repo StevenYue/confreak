@@ -12,8 +12,8 @@
 
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
-#define LOG_INFO    std::cout << dateTimeStr() << " " << __FILENAME__ << ":" << __LINE__ << " "
-#define LOG_ERROR   std::cerr << dateTimeStr() << " " << __FILENAME__ << ":" << __LINE__ << " "
+#define LOG_INFO    Logger::getInstance()->of() << dateTimeStr() << " " << __FILENAME__ << ":" << __LINE__ << " "
+#define LOG_ERROR   Logger::getInstance()->of() << dateTimeStr() << " " << __FILENAME__ << ":" << __LINE__ << " "
 #define LOG_END     std::endl
 
 //Output time in MM/DD/YYYY HH/MM/SS/UU  e.g. 02/18/17 11:33:52:536647
@@ -38,7 +38,7 @@ static std::string date(const std::string& format)
 
 class Logger{
 public:
-    static Logger* getInstance(const std::string& dir, const std::string& fileName)
+    static Logger* getInstance(const std::string& dir="", const std::string& fileName="log")
     {
         if ( !d_logger )
         {
@@ -47,6 +47,11 @@ public:
         return d_logger;
     }
     
+    std::ofstream&       of()
+    {
+        return d_of;
+    }
+
     ~Logger()
     {
         LOG_INFO << "Logger closed" << LOG_END;
@@ -65,16 +70,10 @@ private:
             filePath = fileName + "." + date("%Y.%m.%d");
         }
         d_of.open(filePath.c_str(), std::ofstream::out | std::ofstream::app);
-        d_oldCoutBuf = std::cout.rdbuf();
-        d_oldCerrBuf = std::cerr.rdbuf();
-        std::cout.rdbuf(d_of.rdbuf());
-        std::cerr.rdbuf(d_of.rdbuf());
         LOG_INFO << "Logger setup at file:" << filePath << LOG_END;
     }
 
     std::ofstream       d_of;
-    std::streambuf*     d_oldCoutBuf;
-    std::streambuf*     d_oldCerrBuf;
     static Logger*      d_logger;
 };
 

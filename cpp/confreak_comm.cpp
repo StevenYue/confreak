@@ -60,15 +60,12 @@ ConfreakRt Comm::loadAppData()
     return loadAppData(d_args); 
 }
 
-ConfreakRt Comm::updateAppData(
-        const std::string& appName, 
-        const std::string& data,
-        Application::AppType type)
+ConfreakRt Comm::updateAppData(Application& app)
 {
     Args args = d_args;
-    args["appname"]     = appName;
-    args["data"]        = data;
-    args["apptype"]     = std::to_string(type);
+    args["appname"]     = app.appName();
+    args["data"]        = app.dataAsString();
+    args["apptype"]     = app.appTypeAsString();
     return getWithArgs("updateAppData", args);
 }
 

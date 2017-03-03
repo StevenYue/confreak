@@ -51,7 +51,7 @@ g_wsServer.on('request', function(req) {
 g_confreakdb.connect("localhost:10000/confreakdb");
 var UserModel           = g_confreakdb.model("Freak", {name: String, email: String, password: String});
 var ApplicationModel    = g_confreakdb.model("ApplicationModel", {AppName: String, AppDesc: String, 
-    AppType: Number, BoolData: Boolean, NumericData: Number, Email: String  });
+    AppType: Number, Data: Number, Email: String  });
 
 //g_app set up
 g_app.set("view engine", "ejs");
@@ -208,7 +208,7 @@ g_app.post("/createApp", function(req, res){
             }
             else
             {
-                var app = createApp(req.body.AppName, req.body.AppDesc, req.body.AppType, false, 0, email);
+                var app = createApp(req.body.AppName, req.body.AppDesc, req.body.AppType, 0, email);
                 insertAppModel(app);
                 var checkResult = {errno: CHECK_AVAILABILITY_GOOD};
                 res.send(checkResult);
@@ -254,7 +254,7 @@ g_app.get("/updateAppData", function(req, res){
             {
                 var appRef = {AppName : inf.appname, AppType : appType, Email : inf.email};
                 //var update = {AppName : inf.appname, AppType : appType, Email : inf.email, NumericData : data};
-                var update = {$set: {NumericData: data}};
+                var update = {$set: {Data: data}};
                 updateAppModel(appRef, update);
                 res.send({errno: 0});
             }
@@ -330,9 +330,9 @@ function createUser(email, password, name)
     return {name: name, email: email, password: password};
 }
 
-function createApp(appName, appDesc, appType, boolData, numericData, email)
+function createApp(appName, appDesc, appType, data, email)
 {
-    return {AppName: appName, AppDesc: appDesc, AppType: appType, BoolData: boolData, NumericData: numericData, Email: email};
+    return {AppName: appName, AppDesc: appDesc, AppType: appType, Data: data, Email: email};
 }
 
 function insertUserModel(user)
