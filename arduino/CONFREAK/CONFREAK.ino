@@ -33,8 +33,8 @@ void loop()
     App* app = g_freak.getAppByName("MonAppTest");      //get the app pointer by its name
     if ( app )                                          //Not a null pointer
     {
-        app->numData = readTemperature();               //update global confreak object
-        Serial.println(g_freak.toJsonString().c_str());   //send the global confreak object over serial
+        app->data = readTemperature();               //update global confreak object
+        Serial.println(g_freak.toString().c_str());   //send the global confreak object over serial
     }
     else
     {

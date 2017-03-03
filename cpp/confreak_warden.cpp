@@ -1,6 +1,7 @@
 //Steeng created at Sat Feb 11 19:27:05 EST 2017
 #include <confreak_warden.h>
 #include <unistd.h>
+#include <confreak_arduinoTranslator.h>
 
 namespace confreak { 
 
@@ -45,7 +46,7 @@ void* monitorDuty(void* data)
     {
         sleep(2);
         ConfreakRt cr = comm.serialRead();
-        if ( cr.rc < 0 )
+        if ( cr.rc )
         {
             LOG_ERROR << "MonitorDuty, serial read error:" << cr.rs << LOG_END; 
             continue;
@@ -54,8 +55,13 @@ void* monitorDuty(void* data)
         try
         {
             //have to catch this one, serial can send anything unparseable
-            ConfreakApps cApps(cr.rs);
-            LOG_INFO << cApps.apps().size() << LOG_END;
+            ConfreakApps cApps;
+            cr = arduinoTranslator::toConfreakApps(cr.rs, cApps);
+            if ( cr.rc )
+            {
+                LOG_ERROR << "MonitorDuty, arduino translation error:" << cr.rs << LOG_END; 
+                continue;
+            }
             for ( auto it = cApps.apps().begin(); it != cApps.apps().end(); ++it )
             {
                 Application app = it->second;

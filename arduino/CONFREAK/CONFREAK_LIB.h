@@ -2,39 +2,32 @@
 #ifndef INCLUDED_CONFREAK
 #define INCLUDED_CONFREAK
 #include <Arduino.h> 
-#include <VECTOR_LIB.h>
 
 enum AppType {CONTROL_APP, MONITOR_APP};
+
+const String PIPE("|");
+const String COMMA(",");
 
 class App
 {
 public:
     String      appName;
     AppType     appType;
-    double      numData;
-    bool        boolData;
+    long        data;
    
-    App::App(const String& name, AppType type):
-        appName(name), appType(type), numData(0), boolData(false)
+    App(const String& name, AppType type):
+        appName(name), appType(type), data(0.0)
     {}
 
-    String toJsonString()
+    String toString()
     {
-        String res = String("{\"AppName\":\"");
-        res += appName;
-        res += String("\", \"AppType\":");
+        String res;
+        res.reserve(32);
+        res = appName;
+        res += PIPE;
         res += String(appType);
-        if ( CONTROL_APP == appType )
-        {
-            res += String(", \"BoolData\":");
-            res += String(boolData);
-        }
-        else if ( MONITOR_APP == appType )
-        {
-            res += String(", \"NumericData\":");
-            res += String(numData);
-        }
-        res += String("}");
+        res += PIPE;
+        res += String(data);
         return res;
     }
 };
@@ -44,22 +37,23 @@ class Confreak
 public:
     Confreak(){}
 
-    Confreak(App* apps, int size)
-    {
-        for ( int i = 0; i < size; ++i )
-        {
-            d_apps.push_back(apps[i]);
-        }
-    }
+    Confreak(App* apps, int size):
+        d_apps(apps), d_size(size)
+    {}
 
-    Vector<App>& apps()
+    App* apps()
     {
         return d_apps;
     }
 
+    int& size()
+    {
+        return d_size;
+    }
+
     App* getAppByName(const String& name)
     {
-        for ( int i = 0; i < d_apps.size(); ++i )
+        for ( int i = 0; i < d_size; ++i )
         {
             if ( name == d_apps[i].appName )
             {
@@ -69,26 +63,24 @@ public:
         return NULL;
     }
 
-    String toJsonString()
+    String toString()
     {
-        String res = String("{");
-        for ( int i = 0; i < d_apps.size(); ++i )
+        String res;
+        res.reserve(d_size >> 5);
+        for ( int i = 0; i < d_size; ++i )
         {
             if ( i != 0 )
             {
-                res += String(",");
+                res += PIPE;
             }
-            res += String("\"");
-            res += d_apps[i].appName;
-            res += String("\":");
-            res += d_apps[i].toJsonString();
+            res += d_apps[i].toString();
         }
-        res += String("}");
         return res;
     }
 
 private:
-    Vector<App> d_apps;
+    App*    d_apps;
+    int     d_size;
 };
 
 #endif
