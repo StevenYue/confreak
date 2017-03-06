@@ -1,18 +1,14 @@
 //Steeng: Sun Feb 26 15:48:42 EST 2017
 #include "CONFREAK_LIB.h"
-/***Confreak_lib only works in and after arduino 1.6.6, due to the include lib from lib issue***/
 
-//Assuming you have a control application called "ConAppTest" and 
-//a monitor application called "MonAppTest", ideally only Monitor
-//App should be initilized here, for control app to reduce the duty
-//of parsing string in arduino, there should be an easier way for 
-//arduino
+//Assuming you have to Monitor application MonTest1-10, MonTest11-20,
+//create global scoped App array
 App apps[] = {
-    App("ConAppTest", CONTROL_APP), 
-    App("MonAppTest", MONITOR_APP)
+    App("MonTest1-10", MONITOR_APP),
+    App("MonTest11-20", MONITOR_APP)
 };
 
-//create global object confreak
+//create global object confreak, Confreak will Open Serial if not opened already
 Confreak g_freak(apps, sizeof(apps)/sizeof(apps[0]));
 
 void setup()
@@ -21,25 +17,25 @@ void setup()
     Serial.begin(9600);
 }
 
-//dummy test function return a random number from 0 to 10
-int readTemperature()
+//dummy test function return a random number from 1 to 10
+//In reality this can be the function that actually return
+//some meanful data
+int readOne()
 {
-    return random(0, 10);
+    return random(1, 10);
+}
+
+int readTwo()
+{
+    return random(11, 20);
 }
 
 void loop()
 {
     delay(2000);                                        //framerate 2 seconds
-    App* app = g_freak.getAppByName("MonAppTest");      //get the app pointer by its name
-    if ( app )                                          //Not a null pointer
-    {
-        app->data = readTemperature();               //update global confreak object
-        Serial.println(g_freak.toString().c_str());   //send the global confreak object over serial
-    }
-    else
-    {
-        Serial.println("null ptr");
-    }
+    g_freak.updateAppData("MonTest1-10", readOne());    //update app data by the name
+    g_freak.updateAppData("MonTest11-20", readTwo());
+    g_freak.sendUpdate();                               //Sends the update over serial
 }
 
 //------ end of CONFREAK.ino ------

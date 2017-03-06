@@ -8,9 +8,8 @@ enum AppType {CONTROL_APP, MONITOR_APP};
 const String PIPE("|");
 const String COMMA(",");
 
-class App
+struct App
 {
-public:
     String      appName;
     AppType     appType;
     long        data;
@@ -18,6 +17,16 @@ public:
     App(const String& name, AppType type):
         appName(name), appType(type), data(0.0)
     {}
+
+    friend bool operator==(const App& l, const App& r)
+    {
+        return l.appName == r.appName && l.appType == r.appType && l.data == r.data;
+    }
+    
+    friend bool operator!=(const App& l, const App& r)
+    {
+        return !(l==r);
+    }
 
     String toString()
     {
@@ -39,7 +48,12 @@ public:
 
     Confreak(App* apps, int size):
         d_apps(apps), d_size(size)
-    {}
+    {
+        if (!Serial)
+        {
+            Serial.begin(9600);
+        }
+    }
 
     App* apps()
     {
@@ -63,15 +77,30 @@ public:
         return NULL;
     }
 
+    App* updateAppData(const String& name, long data)
+    {
+        App* app = getAppByName(name);
+        if ( app )
+        {
+            app->data = data;
+        }
+        return app;
+    }
+
+    void sendUpdate()
+    {
+        Serial.write(toString().c_str());
+    }
+
     String toString()
     {
         String res;
-        res.reserve(d_size >> 5);
+        res.reserve(d_size << 5);
         for ( int i = 0; i < d_size; ++i )
         {
             if ( i != 0 )
             {
-                res += PIPE;
+                res += COMMA;
             }
             res += d_apps[i].toString();
         }

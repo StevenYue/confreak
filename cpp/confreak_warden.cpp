@@ -46,7 +46,7 @@ void* monitorDuty(void* data)
     {
         sleep(2);
         ConfreakRt cr = comm.serialRead();
-        if ( cr.rc )
+        if ( cr.rc < 0 )
         {
             LOG_ERROR << "MonitorDuty, serial read error:" << cr.rs << LOG_END; 
             continue;

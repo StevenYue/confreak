@@ -70,7 +70,6 @@ private:
             filePath = fileName + "." + date("%Y.%m.%d");
         }
         d_of.open(filePath.c_str(), std::ofstream::out | std::ofstream::app);
-        LOG_INFO << "Logger setup at file:" << filePath << LOG_END;
     }
 
     std::ofstream       d_of;
