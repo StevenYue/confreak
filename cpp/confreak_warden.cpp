@@ -2,6 +2,7 @@
 #include <confreak_warden.h>
 #include <unistd.h>
 #include <confreak_arduinoTranslator.h>
+#include <config_loader.h>
 
 namespace confreak { 
 
@@ -42,9 +43,10 @@ void* monitorDuty(void* data)
     Warden* wardenPtr = (Warden*)(data);
     LOG_INFO << *wardenPtr << LOG_END;
     Comm& comm = wardenPtr->comm();
+    int frameRate = (*Config::getInstance())["COMM"]["framerate"].asInt();
     while ( true )
     {
-        sleep(2);
+        sleep(frameRate);
         ConfreakRt cr = comm.serialRead();
         if ( cr.rc < 0 )
         {
@@ -99,9 +101,10 @@ void* controlDuty(void* data)
 {
     Warden* wardenPtr = (Warden*)(data);
     LOG_INFO << *wardenPtr << LOG_END;
+    int frameRate = (*Config::getInstance())["COMM"]["framerate"].asInt();
     while ( true )
     {
-        sleep(2);
+        sleep(frameRate);
         LOG_INFO << *wardenPtr << LOG_END;
     }
     return NULL;    
