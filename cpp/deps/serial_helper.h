@@ -17,7 +17,7 @@ void closeSerial(int fd);
 int configSerial(int fd);
 
 //write to serial port, return number of bytes written
-int writeSerial(int fd, const char* buf);
+int writeSerial(int fd, const char* buf, int bufSize);
 
 //read from serial port, return number of bytes read
 int readSerial(int fd, char* buf, int bufSize);

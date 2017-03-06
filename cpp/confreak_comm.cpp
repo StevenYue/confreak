@@ -71,7 +71,7 @@ ConfreakRt Comm::updateAppData(Application& app)
 
 int Comm::serialWrite(const std::string& data)
 {
-    return writeSerial(d_serialfd, data.c_str());
+    return writeSerial(d_serialfd, data.c_str(), data.length());
 }
 
 ConfreakRt Comm::serialRead()

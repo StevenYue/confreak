@@ -33,9 +33,9 @@ int configSerial(int fd)
 }
 
 
-int writeSerial(int fd, const char* buf)
+int writeSerial(int fd, const char* buf, int bufSize)
 {
-    return write(fd, buf, sizeof(buf));
+    return write(fd, buf, bufSize);
 }
 
 

@@ -56,6 +56,16 @@ function delAPPClickedHanlder()
 	ajexCall(args, url, successFunc);
 }
 
+function controlCheckBoxClickedHandler()
+{
+	let appName = $(this).data("AppName");
+	let appType = $(this).data("AppType");
+	let value 	= $(this).is(":checked") ? 1 : 0;
+	let args = { AppName : appName, AppType : appType, Data: value};
+	let url = "/updateAppData";
+	ajexCall(args, url);
+}
+
 function loadAllApplications()
 {
 	let args = {};
@@ -71,6 +81,12 @@ function loadAllApplications()
 			$("#id_appDashBoard").append(rc.HtmlStr);
 			$("#" + rc.DelDivId).data("AppName", appInfo.AppName);
 			$("#" + rc.DelDivId).data("AppType", appInfo.AppType);
+			if ( appInfo.AppType === APP_TYPE_MAP["Control Application"] )
+			{
+				$("#" + rc.HtmlTagId).bind("click", controlCheckBoxClickedHandler);
+				$("#" + rc.HtmlTagId).data("AppName", appInfo.AppName);
+				$("#" + rc.HtmlTagId).data("AppType", appInfo.AppType);
+			}
 		}
 		$(".pull-right").bind("click", delAPPClickedHanlder);
 	}
@@ -190,7 +206,7 @@ function createAppHtmlDiv(appInfo)
         </div>																											\
       </div>																											\
     </div>";
-    return {HtmlStr: appHtml, DelDivId : delButtonID};
+    return {HtmlStr: appHtml, DelDivId : delButtonID, HtmlTagId: htmlTagID};
 }
 
 

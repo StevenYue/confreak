@@ -33,6 +33,19 @@ int readTwo()
 void loop()
 {
     delay(2000);                                        //framerate 2 seconds
+    if ( Serial.available() )
+    {
+        String s = Serial.readString();
+        if ( s.charAt(s.length()-1) == '1' )
+        {
+            digitalWrite(13, 1); 
+        }
+        else
+        {
+            digitalWrite(13, 0); 
+        }
+    }
+
     g_freak.updateAppData("MonTest1-10", readOne());    //update app data by the name
     g_freak.updateAppData("MonTest11-20", readTwo());
     g_freak.sendUpdate();                               //Sends the update over serial

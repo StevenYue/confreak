@@ -241,6 +241,17 @@ g_app.post("/deleteApp", function(req, res){
     }
 });
 
+g_app.post("/updateAppData", function(req, res){
+    console.log("updateAppData request: ", req.body);
+    if ( sessionVerify(req, res) === SESSION_VERIFY_GOOD )
+    {
+        var appRef = {AppName : req.body.AppName, AppType : req.body.AppType, Email : req.session.email};
+        var update = {$set: {Data: req.body.Data}};
+        updateAppModel(appRef, update);
+        res.send({errno: 0});
+    }
+});
+
 g_app.get("/updateAppData", function(req, res){
     console.log("updateAppData request: ", req.query);
     var inf = req.query;

@@ -101,13 +101,52 @@ void* controlDuty(void* data)
 {
     Warden* wardenPtr = (Warden*)(data);
     LOG_INFO << *wardenPtr << LOG_END;
+    Comm& comm = wardenPtr->comm();
     int frameRate = (*Config::getInstance())["COMM"]["framerate"].asInt();
     while ( true )
     {
         sleep(frameRate);
-        LOG_INFO << *wardenPtr << LOG_END;
+        confreak::ConfreakRt cr = comm.loadAppData();
+        if ( cr.rc == 0 )
+        {
+            try 
+            {
+                ConfreakApps cApps(cr.rs, Application::CONTROL_APP);
+                bool isUpdated = false;
+                for ( auto it = cApps.apps().begin(); it != cApps.apps().end(); ++it )
+                {
+                    Application app = it->second;
+                    if ( wardenPtr->apps().apps()[app.appName()] != app )
+                    {
+                        isUpdated = true;
+                        wardenPtr->apps().apps()[app.appName()].updateAppData(app);
+                    }
+                }
+                if ( isUpdated )
+                {
+                    cr.rs = arduinoTranslator::toArduino(wardenPtr->apps());
+                    cr.rc = comm.serialWrite(cr.rs);
+                    if ( 0 > cr.rc )
+                    {
+                        LOG_ERROR << "ControlDuty, update app data error:" << cr.rs << LOG_END; 
+                    }
+                    else
+                    {
+                        LOG_INFO << "ControlDuty, update app data successful:" << cr.rc << " " << cr.rs << LOG_END; 
+                    }
+                }
+                else
+                {
+                    LOG_INFO << "ControlDuty, no need to send arduino update:" << LOG_END; 
+                }
+            }
+            catch (const std::exception& e)
+            {
+                LOG_ERROR << "Control Warden error " << e.what() << LOG_END;
+            }
+        }
     }
-    return NULL;    
+    return NULL;
 }
 
 }  //end of namespace confreak

@@ -77,7 +77,21 @@ std::string Application::appTypeAsString() const
 
 std::string Application::dataAsString() const
 {
-    return std::to_string(d_data);
+    if ( d_appType == Application::CONTROL_APP )
+    {
+        if ( d_data > 0 )
+        {
+            return "1";
+        }
+        else
+        {
+            return "0";
+        }
+    }
+    else
+    {
+        return std::to_string(d_data);
+    }
 }
 
 int Application::setData(const std::string& dStr)
