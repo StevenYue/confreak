@@ -242,7 +242,7 @@ g_app.post("/deleteApp", function(req, res){
 });
 
 g_app.post("/updateAppData", function(req, res){
-    console.log("updateAppData request: ", req.body);
+    console.log("updateAppData post request: ", req.body);
     if ( sessionVerify(req, res) === SESSION_VERIFY_GOOD )
     {
         var appRef = {AppName : req.body.AppName, AppType : req.body.AppType, Email : req.session.email};
@@ -253,7 +253,7 @@ g_app.post("/updateAppData", function(req, res){
 });
 
 g_app.get("/updateAppData", function(req, res){
-    console.log("updateAppData request: ", req.query);
+    console.log("updateAppData get request: ", req.query);
     var inf = req.query;
     var data = Number(inf.data);
     var appType = Number(inf.apptype);

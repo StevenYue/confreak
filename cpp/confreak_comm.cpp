@@ -45,7 +45,6 @@ ConfreakRt Comm::getWithArgs(const std::string& reqName, const Args& args)
         url += it->first + "=" + it->second;
     }
     ConfreakRt cr;
-    LOG_INFO << "URL:" << url << LOG_END;
     cr.rc = d_ec.httpGet(url, cr.rs);
     return cr;
 }

@@ -16,9 +16,9 @@ std::string toArduino(Application& app);
 
 std::string toArduino(ConfreakApps& apps);
 
-ConfreakRt toApplication(const std::string& arduinoStr, Application& app);
+int toApplication(const std::string& arduinoStr, Application& app);
 
-ConfreakRt toConfreakApps(const std::string& arduinoStr, ConfreakApps& apps);
+int toConfreakApps(const std::string& arduinoStr, ConfreakApps& apps);
 
 }   //end of namespace arduinoTranslator
 }   //end of namespace confreak

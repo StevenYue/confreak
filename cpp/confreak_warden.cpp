@@ -46,23 +46,26 @@ void* monitorDuty(void* data)
     int frameRate = (*Config::getInstance())["COMM"]["framerate"].asInt();
     while ( true )
     {
-        sleep(frameRate);
+        usleep(frameRate);
         ConfreakRt cr = comm.serialRead();
         if ( cr.rc < 0 )
         {
             LOG_ERROR << "MonitorDuty, serial read error:" << cr.rs << LOG_END; 
             continue;
         }
-        LOG_INFO << "Read " << cr.rc << " bytes, content:" << cr.rs << LOG_END;
         try
         {
             //have to catch this one, serial can send anything unparseable
             ConfreakApps cApps;
-            cr = arduinoTranslator::toConfreakApps(cr.rs, cApps);
+            cr.rc = arduinoTranslator::toConfreakApps(cr.rs, cApps);
             if ( cr.rc )
             {
-                LOG_ERROR << "MonitorDuty, arduino translation error:" << cr.rs << LOG_END; 
+                LOG_ERROR << "MonitorDuty, arduino translation error:'" << cr.rs << "'" <<LOG_END; 
                 continue;
+            }
+            else
+            {
+                LOG_INFO << "MonitorDuty, arduino translation good:'" << cr.rs << "'" <<LOG_END; 
             }
             for ( auto it = cApps.apps().begin(); it != cApps.apps().end(); ++it )
             {
@@ -85,7 +88,7 @@ void* monitorDuty(void* data)
                 }
                 else
                 {
-                    LOG_INFO << "MonitorDuty, no need to send http update:" << LOG_END; 
+                    //LOG_INFO << "MonitorDuty, no need to send http update:" << LOG_END; 
                 }
             }
         }
@@ -105,7 +108,7 @@ void* controlDuty(void* data)
     int frameRate = (*Config::getInstance())["COMM"]["framerate"].asInt();
     while ( true )
     {
-        sleep(frameRate);
+        usleep(frameRate);
         confreak::ConfreakRt cr = comm.loadAppData();
         if ( cr.rc == 0 )
         {
@@ -137,12 +140,12 @@ void* controlDuty(void* data)
                 }
                 else
                 {
-                    LOG_INFO << "ControlDuty, no need to send arduino update:" << LOG_END; 
+                    //LOG_INFO << "ControlDuty, no need to send arduino update:" << LOG_END; 
                 }
             }
             catch (const std::exception& e)
             {
-                LOG_ERROR << "Control Warden error " << e.what() << LOG_END;
+                //LOG_ERROR << "Control Warden error " << e.what() << LOG_END;
             }
         }
     }

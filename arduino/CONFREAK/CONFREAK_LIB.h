@@ -5,17 +5,20 @@
 
 enum AppType {CONTROL_APP, MONITOR_APP};
 
-const String PIPE("|");
-const String COMMA(",");
+const char PIPE = '|';
+const char COMMA = ',';
 
 struct App
 {
+    typedef     void*(*Action)(void*);
+    
     String      appName;
     AppType     appType;
     long        data;
-   
-    App(const String& name, AppType type):
-        appName(name), appType(type), data(0.0)
+    Action      action;
+
+    App(const String& name, AppType type, Action action=NULL):
+        appName(name), appType(type), data(0.0), action(action)
     {}
 
     friend bool operator==(const App& l, const App& r)
@@ -90,6 +93,63 @@ public:
     void sendUpdate()
     {
         Serial.write(toString().c_str());
+    }
+
+    void readCommand()
+    {
+        if ( Serial.available() )
+        {
+            String command = Serial.readString();
+            int appStrStartIndex = 0;
+            for ( int i = 0, len = command.length(); i < len; ++i )
+            {
+                if ( COMMA == command.charAt(i) || i == (len - 1) )
+                {
+                    String appStr;
+                    if ( i == ( len - 1 ) )
+                    {
+                        appStr = command.substring(appStrStartIndex);
+                    }
+                    else
+                    {
+                        appStr = command.substring(appStrStartIndex, i);
+                    }
+                    appStrStartIndex = i + 1;
+                    String appData[3]; //appName|appType|appData
+                    int dataStartIndex = 0;
+                    int dataCount = 0;
+                    for ( int j = 0, appStrLen = appStr.length(); j < appStrLen; ++j )
+                    {
+                        if ( PIPE == appStr.charAt(j) || j == (appStrLen - 1) )
+                        {
+                            if ( j == ( appStrLen - 1 ) )
+                            {
+                                appData[dataCount] = appStr.substring(dataStartIndex);
+                            }
+                            else
+                            {
+                                appData[dataCount] = appStr.substring(dataStartIndex, j);
+                            }
+                            dataStartIndex = j + 1;
+                            ++dataCount;
+                        }
+                    }
+                    if ( 3 == dataCount )
+                    {
+                        App* app = getAppByName(appData[0]);
+                        if ( app )
+                        {
+                            long dataRead = appData[2].toInt();
+                            if ( app->data != dataRead && NULL != app->action )
+                            {
+                                app->action(&dataRead);
+                                app->data = dataRead;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     String toString()

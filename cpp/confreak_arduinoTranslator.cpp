@@ -27,9 +27,9 @@ std::string toArduino(ConfreakApps& apps)
     return res;
 }
 
-ConfreakRt toApplication(const std::string& arduinoStr, Application& app)
+int toApplication(const std::string& arduinoStr, Application& app)
 {
-    ConfreakRt cr;
+    int rc;
     std::istringstream is(arduinoStr);
     std::string token;
     std::vector<std::string> tokens;
@@ -42,31 +42,31 @@ ConfreakRt toApplication(const std::string& arduinoStr, Application& app)
     if ( tokens.size() == 3 )
     {
         app.appName() = tokens[0];
-        cr.rc = app.setAppType(tokens[1]);
-        cr.rc = app.setData(tokens[2]);
+        rc = app.setAppType(tokens[1]);
+        rc = app.setData(tokens[2]);
     }
     else
     {
-        cr.rc = -1;
+        rc = -1;
     }
-    return cr;
+    return rc;
 }
 
-ConfreakRt toConfreakApps(const std::string& arduinoStr, ConfreakApps& apps)
+int toConfreakApps(const std::string& arduinoStr, ConfreakApps& apps)
 {
-    ConfreakRt cr;
+    int rc;
     std::istringstream is(arduinoStr);
     std::string token;
     while (std::getline(is, token, COMMA.at(0)))
     {
         Application app;
-        cr = toApplication(token, app);
-        if ( !cr.rc )
+        rc = toApplication(token, app);
+        if ( !rc )
         {
             apps.apps()[app.appName()] = app;
         }
     }
-    return cr;
+    return rc;
 }
 
 }   //end of namespace arduinoTranslator
