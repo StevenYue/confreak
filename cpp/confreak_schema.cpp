@@ -2,13 +2,9 @@
 #include <iostream>
 #include <sstream>
 #include <memory>
+#include <fstream>
 
 namespace confreak {
-
-std::string w2s(const std::wstring& ws)
-{
-    return std::string(ws.begin(), ws.end());
-}
 
 std::unordered_map<int, Application::AppType> Application::AppTypeMap = 
     {{0, Application::CONTROL_APP}, {1, Application::MONITOR_APP}};
@@ -19,15 +15,19 @@ std::unordered_map<int, std::string> Application::AppTypeStrMap =
 std::unordered_map<std::string, Application::AppType>   Application::AppStrTypeMap = 
     {{"0", Application::CONTROL_APP}, {"1", Application::MONITOR_APP}};
 
-Application::Application(const std::string& appName, const std::string& appDesc, AppType appType, double numData):
+Application::Application(
+        const std::string&  appName, 
+        const std::string&  appDesc, 
+        AppType             appType, 
+        double              numData):
 d_appName(appName), d_appDesc(appDesc), d_appType(appType), d_data(numData)
 {}
 
 Application::Application(
-    const std::string& appName, 
-    const std::string& appDesc, 
-    AppType appType, 
-    const std::string& d): 
+    const std::string&  appName, 
+    const std::string&  appDesc, 
+    AppType             appType, 
+    const std::string&  d): 
 d_appName(appName), d_appDesc(appDesc), d_appType(appType)
 {
     setData(d);
@@ -110,29 +110,31 @@ int Application::setData(const std::string& dStr)
 
 ConfreakApps::ConfreakApps(const std::string& jsonStr, Application::AppType type)
 {
-    std::unique_ptr<JSONValue> data(JSON::Parse(jsonStr.c_str()));
-    if ( !data )
+    Json::Reader reader;
+    Json::Value obj;
+    bool isOk = reader.parse(jsonStr, obj);
+    if ( !isOk && obj.isArray() )
     {
         std::ostringstream os;
-        os << "Error initializ ConfreakApps parsing json, jsonstr: " << jsonStr;
+        os << "Error initializ ConfreakApps parsing json, jsonstr: " << jsonStr 
+            << "\n isOK:" << isOk << ", isArray:" << obj.isArray();
         throw std::runtime_error(os.str());
     }
-    std::vector<std::wstring> keys = data->ObjectKeys();
-    for ( auto key = keys.begin(); key != keys.end(); ++key )
+    for ( unsigned int i = 0; i < obj.size(); ++i )
     {
-        JSONValue *row = data->Child(key->c_str());
-        if ( !row )
+        Json::Value row = obj[i];
+        if ( !row.isObject() )
         {
             std::ostringstream os;
-            os << "Error initializ ConfreakApps needs vector format, jsonstr: " << jsonStr;
+            os << "Expect Json Object:" << row;
             throw std::runtime_error(os.str());
         }
-        std::string appName = saveJSON(row->Child(L"AppName"), std::string(""));
-        std::string appDesc = saveJSON(row->Child(L"AppDesc"), std::string(""));
-        Application::AppType appType = Application::AppTypeMap[saveJSON(row->Child(L"AppType"), double(-1))];
+        std::string appName = row["AppName"].asString();
+        std::string appDesc = row["AppDesc"].asString();
+        Application::AppType appType = Application::AppTypeMap[row["AppType"].asInt()];
         if ( type == appType || type == Application::ALL_APP )
         {
-            double data = saveJSON(row->Child(L"Data"),double(0));
+            double data = row["Data"].asDouble();
             d_apps[appName] = Application(appName, appDesc, appType, data);
         }
     }
@@ -140,19 +142,6 @@ ConfreakApps::ConfreakApps(const std::string& jsonStr, Application::AppType type
 
 ConfreakApps::ConfreakApps()
 {}
-
-bool        ConfreakApps::saveJSON(const JSONValue* json, bool defaultValue)
-{
-    return json ? json->AsBool() : defaultValue;
-}
-double      ConfreakApps::saveJSON(const JSONValue* json, double defaultValue)
-{
-    return json ? json->AsNumber() : defaultValue;
-}
-std::string ConfreakApps::saveJSON(const JSONValue* json, std::string&& defaultValue)
-{
-    return json ? w2s(json->AsString()) : defaultValue;
-}
 
 }; // end of namespace confreak
 

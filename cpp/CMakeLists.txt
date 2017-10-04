@@ -6,8 +6,7 @@ add_definitions(-std=c++11)
 #Directories
 include_directories("${PROJECT_BINARY_DIR}")
 include_directories("${PROJECT_BINARY_DIR}/deps")
-include_directories("/usr/lib/x86_64-linux-gnu/")
-#include_directories("/home/s/workspace/cpp/SimpleJSON/src/")
+#include_directories("/usr/lib/x86_64-linux-gnu/")
 
 #source files
 #set(SOURCES confreak.m.cpp) #Manually include the source file
@@ -19,3 +18,4 @@ add_executable(confreak.tsk  ${SOURCES}  )
 #Adding LIBS
 target_link_libraries(confreak.tsk curl)
 target_link_libraries(confreak.tsk pthread)
+target_link_libraries(confreak.tsk jsoncpp)

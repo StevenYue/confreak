@@ -3,9 +3,8 @@
 #include <string>
 #include <iostream>
 #include <unordered_map>
-#include <JSON.h>
-#include <JSONValue.h>
 #include <logger.h>
+#include <jsoncpp/json/json.h>
 
 namespace confreak {
 
@@ -19,11 +18,19 @@ struct ConfreakRt
 class Application {
 public:
     enum AppType  {CONTROL_APP, MONITOR_APP, ALL_APP};
-    static std::unordered_map<int, AppType>   AppTypeMap;
-    static std::unordered_map<int, std::string>   AppTypeStrMap;
-    static std::unordered_map<std::string, AppType>   AppStrTypeMap;
-    Application(const std::string& appName, const std::string& appDesc, AppType appType, double numData); 
-    Application(const std::string& appName, const std::string& appDesc, AppType appType, const std::string& d); 
+    static std::unordered_map<int, AppType>             AppTypeMap;
+    static std::unordered_map<int, std::string>         AppTypeStrMap;
+    static std::unordered_map<std::string, AppType>     AppStrTypeMap;
+    Application(
+            const std::string&  appName, 
+            const std::string&  appDesc, 
+            AppType             appType, 
+            double              numData); 
+    Application(
+            const std::string&  appName, 
+            const std::string&  appDesc, 
+            AppType             appType, 
+            const std::string&  d); 
     
     Application();
 
@@ -56,7 +63,9 @@ public:
 
     friend bool operator==(const Application& l, const Application& r)
     {
-        return l.d_appName == r.d_appName && l.d_appType == r.d_appType && l.d_data == r.d_data;
+        return l.d_appName == r.d_appName 
+            && l.d_appType == r.d_appType 
+            && l.d_data == r.d_data;
     }
 
     friend bool operator!=(const Application& l, const Application& r)
@@ -75,7 +84,9 @@ private:
 class ConfreakApps {
 public:
     typedef std::unordered_map<std::string, Application> ConApp;
-    ConfreakApps(const std::string& jsonStr, Application::AppType appType = Application::ALL_APP);
+    ConfreakApps(
+            const std::string&      jsonStr, 
+            Application::AppType    appType = Application::ALL_APP);
     ConfreakApps();
 
     ConApp& apps()
@@ -100,11 +111,7 @@ public:
 private:
     ConApp d_apps;
     
-    bool        saveJSON(const JSONValue* json, bool defaultValue);
-    double      saveJSON(const JSONValue* json, double defaultValue);
-    std::string saveJSON(const JSONValue* json, std::string&& defaultValue);
 };
-
 
 }; // end of namespace confreak
 #endif
